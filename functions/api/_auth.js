@@ -1,4 +1,4 @@
-// Auxiliar de Autenticación para API de BELARA
+// Auxiliar de Autenticación para API de Fogon
 
 /**
  * Obtiene el token de la sesión desde las Cookies o el encabezado Authorization

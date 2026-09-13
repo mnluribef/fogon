@@ -1,4 +1,4 @@
-// Controlador de Registro de Ventas - BELARA
+// Controlador de Registro de Ventas - Fogon
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**

@@ -108,7 +108,7 @@ if (mobileMenuBtn && navLinks) {
 
 // --- Shopping Cart Logic ---
 
-let cart = JSON.parse(localStorage.getItem('elara_cart')) || [];
+let cart = JSON.parse(localStorage.getItem('fogon_cart')) || [];
 
 const cartBtn = document.getElementById('cart-btn');
 const closeCartBtn = document.getElementById('close-cart');
@@ -254,7 +254,7 @@ const updateQty = (key, delta) => {
 
 // Save to LocalStorage
 const saveCart = () => {
-    localStorage.setItem('elara_cart', JSON.stringify(cart));
+    localStorage.setItem('fogon_cart', JSON.stringify(cart));
 };
 
 // Update Badge Count

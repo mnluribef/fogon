@@ -1,4 +1,4 @@
-// Controlador de Pedidos y Ventas - BELARA
+// Controlador de Pedidos y Ventas - Fogon
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**

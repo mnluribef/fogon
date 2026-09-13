@@ -1,4 +1,4 @@
-// Controlador de Catálogo de Productos - BELARA
+// Controlador de Catálogo de Productos - Fogon
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**

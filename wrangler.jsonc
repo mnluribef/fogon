@@ -1,7 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fogon",
-  "pages_build_output_dir": "./dist",
+  "assets": {
+    "directory": "./dist"
+  },
   "compatibility_date": "2026-05-02",
   "observability": {
     "enabled": true
