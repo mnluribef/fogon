@@ -1,0 +1,24 @@
+{
+  "name": "romaran",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "dev:pages": "concurrently \"pnpm run dev\" \"wrangler pages dev --proxy 4321\"",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "deploy": "pnpm run build && wrangler pages deploy dist"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.2.3",
+    "astro": "^7.2.4",
+    "lucide-astro": "^0.556.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "concurrently": "^10.0.5",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.129.1"
+  }
+}

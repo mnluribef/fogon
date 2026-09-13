@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#C1121F;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFB347;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Flame shape -->
+  <path d="M50 8 C50 8 35 28 32 45 C29 55 35 62 40 65 C36 55 42 48 42 48 C44 58 50 64 50 75 C50 75 58 68 58 55 C58 48 54 42 54 42 C60 52 62 62 56 68 C62 62 68 52 65 40 C62 28 50 8 50 8Z" fill="url(#fireGrad)"/>
+  <!-- Inner flame -->
+  <path d="M50 35 C50 35 42 48 44 58 C46 64 50 68 50 68 C50 68 56 62 56 52 C56 46 52 40 52 40 C54 46 54 52 50 58 C48 52 50 40 50 35Z" fill="#FFD700" opacity="0.8"/>
+</svg>

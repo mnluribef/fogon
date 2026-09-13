@@ -1,0 +1,515 @@
+---
+// ProductCatalog.astro
+// Carga productos de la API y renderiza el catálogo + carrito para ÉLARA.
+---
+
+<!-- Filtros de Categorías -->
+<section id="menu">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>Nuestro <span>Menú</span></h2>
+      <p>Cada plato, preparado con amor y sazón de verdad. Entradas, platos principales, combos, postres y bebidas para toda la familia.</p>
+    </div>
+    <div class="search-container reveal" style="margin: 0 auto 2rem; max-width: 500px; padding: 0 1rem;">
+      <div style="position: relative;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-light);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="product-search" placeholder="Buscar platillos (ej. pabellón, pollo, combo...)" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.2rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 50px; font-size: 1rem; outline: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-family: 'Outfit', sans-serif;">
+      </div>
+    </div>
+
+    <div class="category-filters-container reveal" style="margin-bottom: 2.5rem; display: flex; justify-content: center;">
+      <div class="category-filters" id="category-filters" style="display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;">
+        <!-- Se cargará dinámicamente con JavaScript -->
+      </div>
+    </div>
+
+    <div class="product-grid" id="catalog-container">
+      <!-- Loading state -->
+      <div class="loading-catalog" style="grid-column: 1/-1; text-align: center; padding: 3rem 0; color: var(--text-secondary);">
+        <svg xmlns="http://www.w3.org/2000/svg" class="spin" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <p>Cargando colección...</p>
+      </div>
+    </div>
+    
+    <div id="load-more-container" style="text-align: center; margin-top: 3rem; display: none;">
+      <button id="load-more-btn" class="btn-outline-dark">Ver Más Productos</button>
+    </div>
+  </div>
+</section>
+
+<!-- Cart Drawer -->
+<div id="cart-overlay" class="cart-overlay"></div>
+<div id="cart-drawer" class="cart-drawer">
+  <div class="cart-header">
+    <h3>🛒 Tu Pedido</h3>
+    <div class="cart-header-actions">
+      <button id="clear-cart" class="clear-cart-btn" title="Vaciar Carrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+      </button>
+      <button id="close-cart" aria-label="Cerrar carrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="cart-items" class="cart-items">
+    <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
+  </div>
+  <div class="cart-customer-form" id="cart-customer-form" style="padding: 1.2rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); display: none; background: rgba(0,0,0,0.015);">
+    <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Datos de Contacto
+    </h4>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 200px;">
+        <label for="client-name" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Nombre Completo</label>
+        <input type="text" id="client-name" placeholder="Ej. María González" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+      </div>
+      <div style="flex: 1; min-width: 200px;">
+        <label for="client-phone" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Teléfono / WhatsApp</label>
+        <input type="tel" id="client-phone" placeholder="Ej. +58 412-4756191" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+      </div>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <p class="cart-note">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      ¿Vas a pedir delivery? Indícanos tu dirección al confirmar por WhatsApp.
+    </p>
+    <button id="whatsapp-order-btn" class="cta-btn whatsapp-btn" disabled>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Enviar Pedido por WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- Floating Cart -->
+<button id="cart-btn" class="float-cart" aria-label="Ver carrito">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  <span id="cart-count">0</span>
+</button>
+
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/584124756191?text=Hola!%20Vengo%20de%20la%20web%20de%20%C3%89LARA%20y%20quiero%20ver%20el%20cat%C3%A1logo" class="float-wa" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+  <svg viewBox="0 0 24 24" width="35" height="35" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Confirm Modal -->
+<div id="confirm-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    </div>
+    <h3>¿Vaciar Bolso?</h3>
+    <p>Se eliminarán todos los artículos de tu pedido actual. Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button id="modal-cancel" class="modal-btn secondary">Cancelar</button>
+      <button id="modal-confirm" class="modal-btn danger">Vaciar Pedido</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ÉLARA — Catálogo + Carrito
+// ============================================================
+
+const CONFIG = { WHATSAPP_NUMBER: '584124756191', DEFAULT_CURRENCY: '$' };
+
+// --- SCROLL REVEAL ---
+const initReveal = () => {
+  const reveals = document.querySelectorAll<HTMLElement>('.reveal');
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => observer.observe(el));
+};
+
+// --- TOAST ---
+const showToast = (message: string) => {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+};
+
+// --- CART ---
+let cart: Array<{ key: string; name: string; qty: number; icon: string; options: Record<string, string> }> =
+  JSON.parse(localStorage.getItem('fogon_cart') || '[]');
+
+const saveCart = () => localStorage.setItem('fogon_cart', JSON.stringify(cart));
+
+const updateCartCount = () => {
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById('cart-count');
+  const btn = document.getElementById('cart-btn');
+  if (badge) badge.textContent = String(total);
+  if (btn) btn.classList.toggle('visible', total > 0);
+};
+
+const renderCart = () => {
+  const container = document.getElementById('cart-items');
+  const form = document.getElementById('cart-customer-form') as HTMLElement;
+  const waBtn = document.getElementById('whatsapp-order-btn') as HTMLButtonElement;
+  if (!container) return;
+
+  if (cart.length === 0) {
+    container.innerHTML = '<div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>';
+    if (waBtn) waBtn.disabled = true;
+    if (form) form.style.display = 'none';
+    return;
+  }
+
+  if (waBtn) waBtn.disabled = false;
+  if (form) form.style.display = 'block';
+
+  const labels: Record<string, string> = { size: 'Tamaño', proteina: 'Proteína', punto: 'Punto', salsa: 'Salsa', finish: 'Acabado' };
+
+  container.innerHTML = cart.map(item => {
+    const sizeText = Object.entries(item.options || {})
+      .filter(([, v]) => v)
+      .map(([k, v]) => `<span class="cart-item-option">${labels[k] || k}: ${v}</span>`)
+      .join('');
+    return `
+      <div class="cart-item">
+        <div class="item-info">
+          <div class="item-title-row">
+            <div class="item-details">
+              <h4>${item.name}</h4>
+              <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.2rem;">${sizeText}</div>
+            </div>
+          </div>
+        </div>
+        <div class="item-qty">
+          <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', -1)">-</button>
+          <span>${item.qty}</span>
+          <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', 1)">+</button>
+          <button class="remove-item" onclick="window._cart.removeFromCart('${item.key}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+const toggleCart = () => {
+  const drawer = document.getElementById('cart-drawer');
+  const overlay = document.getElementById('cart-overlay');
+  drawer?.classList.toggle('active');
+  overlay?.classList.toggle('active');
+  if (drawer?.classList.contains('active')) renderCart();
+};
+
+const removeFromCart = (key: string) => {
+  cart = cart.filter(i => i.key !== key);
+  saveCart(); renderCart(); updateCartCount();
+};
+
+const updateQty = (key: string, delta: number) => {
+  const item = cart.find(i => i.key === key);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) removeFromCart(key);
+  else { saveCart(); renderCart(); updateCartCount(); }
+};
+
+const addToCart = (id: string, name: string, qty = 1, icon = 'package', options: Record<string, string> = {}) => {
+  const optionsKey = Object.keys(options).sort().map(k => options[k]).join('-');
+  const itemKey = optionsKey ? `${id}-${optionsKey}` : id;
+  const existing = cart.find(i => i.key === itemKey);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({ key: itemKey, name, qty, icon, options });
+  }
+  saveCart();
+  updateCartCount();
+  const optList = Object.values(options).filter(Boolean);
+  showToast(`¡Añadido ${qty}x ${name}${optList.length ? ` (${optList.join(', ')})` : ''}!`);
+};
+
+// Exponer para onclick attrs en HTML dinámico
+(window as any)._cart = { updateQty, removeFromCart };
+
+// --- EVENTOS CARRITO ---
+document.getElementById('cart-btn')?.addEventListener('click', toggleCart);
+document.getElementById('close-cart')?.addEventListener('click', toggleCart);
+document.getElementById('cart-overlay')?.addEventListener('click', toggleCart);
+
+const confirmModal = document.getElementById('confirm-modal');
+document.getElementById('clear-cart')?.addEventListener('click', () => {
+  if (cart.length > 0) confirmModal?.classList.add('active');
+});
+document.getElementById('modal-cancel')?.addEventListener('click', () => confirmModal?.classList.remove('active'));
+confirmModal?.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.remove('active'); });
+document.getElementById('modal-confirm')?.addEventListener('click', () => {
+  cart = []; saveCart(); renderCart(); updateCartCount();
+  confirmModal?.classList.remove('active');
+  showToast('Bolso vaciado');
+});
+
+// --- WHATSAPP ORDER ---
+document.getElementById('whatsapp-order-btn')?.addEventListener('click', async () => {
+  const nameInput = document.getElementById('client-name') as HTMLInputElement;
+  const phoneInput = document.getElementById('client-phone') as HTMLInputElement;
+  const clientName = nameInput?.value.trim() || '';
+  const clientPhone = phoneInput?.value.trim() || '';
+
+  if (!clientName || !clientPhone) {
+    showToast('⚠️ Ingresa tu nombre y teléfono.');
+    if (!clientName) nameInput?.focus(); else phoneInput?.focus();
+    return;
+  }
+
+  const waBtn = document.getElementById('whatsapp-order-btn') as HTMLButtonElement;
+  waBtn.disabled = true;
+  waBtn.innerHTML = 'Registrando Pedido...';
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientName, clientPhone, items: cart }),
+    });
+    if (!res.ok) throw new Error();
+    const result = await res.json() as { success: boolean; orderId?: string; error?: string };
+
+    if (result.success && result.orderId) {
+      let msg = `¡Hola FOGÓN! 🔥🍽️\n\nHe hecho un pedido desde la web.\n*Número de Pedido:* #${result.orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Mis platillos:*\n`;
+      cart.forEach(item => {
+        const opts = Object.entries(item.options || {}).filter(([, v]) => v)
+          .map(([k, v]) => `${labels[k] || k}: ${v}`).join(', ');
+        msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ''}\n`;
+      });
+      const total = cart.reduce((s, i) => s + i.qty, 0);
+      msg += `\n*Total de platillos:* ${total}\n\n🚀 *Por favor confírmen el pedido, indica si es DELIVERY o RETIRO EN LOCAL y el método de pago. ¡Gracias!*`;
+
+      cart = []; saveCart(); updateCartCount(); renderCart();
+      if (nameInput) nameInput.value = '';
+      if (phoneInput) phoneInput.value = '';
+      toggleCart();
+      showToast(`🎉 ¡Pedido #${result.orderId} registrado con éxito!`);
+      window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+    } else {
+      throw new Error(result.error || 'Error');
+    }
+  } catch {
+    showToast('❌ Error de conexión al registrar pedido. Intenta de nuevo.');
+  } finally {
+    waBtn.disabled = false;
+    waBtn.innerHTML = 'Enviar Pedido por WhatsApp';
+  }
+});
+
+// --- CATÁLOGO ---
+let catalogProducts: any[] = [];
+let activeCategory = 'all';
+let searchQuery = '';
+const PAGE_SIZE = 6;
+let visibleCount = PAGE_SIZE;
+
+const categoryNames: Record<string, string> = {
+  all: 'Todo 🍽️',
+  entradas: '🥗 Entradas',
+  principales: '🍖 Platos Principales',
+  combos: '🪙 Combos',
+  postres: '🍰 Postres',
+  bebidas: '🥤 Bebidas'
+};
+const colorMap: Record<string, string> = {
+  pequeno: '#FFD4C2',
+  mediano: '#FF6B35',
+  grande: '#C1121F',
+  familiar: '#7B2D00',
+  res: '#8B1A1A',
+  pollo: '#D4822A',
+  cerdo: '#C0504D',
+  mixto: '#FF6B35',
+  veggie: '#2A9D4E'
+};
+
+const renderCategoryFilters = (products: any[]) => {
+  const container = document.getElementById('category-filters');
+  if (!container) return;
+  const types = new Set<string>(products.map((p: any) => p.type_id).filter(Boolean));
+  const toRender = ['all', ...Array.from(types)];
+  container.innerHTML = toRender.map(type => {
+    const name = categoryNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
+    return `<button class="category-filter-btn ${activeCategory === type ? 'active' : ''}" data-category="${type}">${name}</button>`;
+  }).join('');
+};
+
+const renderProducts = (products: any[]) => {
+  const container = document.getElementById('catalog-container');
+  const loadMoreContainer = document.getElementById('load-more-container');
+  if (!container) return;
+  
+  let filtered = activeCategory === 'all' ? products : products.filter((p: any) => p.type_id === activeCategory);
+  
+  if (searchQuery.trim() !== '') {
+    const q = searchQuery.toLowerCase().trim();
+    filtered = filtered.filter((p: any) => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)));
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:var(--text-secondary)"><p>No se encontraron productos que coincidan con tu búsqueda.</p></div>';
+    if (loadMoreContainer) loadMoreContainer.style.display = 'none';
+    return;
+  }
+
+  const paginated = filtered.slice(0, visibleCount);
+  
+  if (loadMoreContainer) {
+    loadMoreContainer.style.display = filtered.length > visibleCount ? 'block' : 'none';
+  }
+
+  container.innerHTML = paginated.map((p: any) => {
+    let attributesHtml = '';
+    if (p.attributes?.length > 0) {
+      attributesHtml = p.attributes.map((attr: any) => {
+        const optionsHtml = attr.type === 'color_swatch'
+          ? `<div class="color-swatch-container" data-attribute="${attr.key}" data-product="${p.id}">${attr.values.map((val: string, idx: number) => {
+              const hex = colorMap[val.toLowerCase().trim()] || val;
+              const lightClass = ['blanco', 'amarillo', 'beige', 'white', 'yellow'].includes(val.toLowerCase().trim()) ? 'light-color' : '';
+              return `<button class="color-swatch-btn ${idx === 0 ? 'active' : ''} ${lightClass}" style="background-color:${hex};" data-value="${val}" title="${val}"></button>`;
+            }).join('')}</div>`
+          : `<div class="attribute-selector" data-attribute="${attr.key}" data-product="${p.id}">${attr.values.map((val: string, idx: number) =>
+              `<button class="attribute-btn ${idx === 0 ? 'active' : ''}" data-value="${val}">${val}</button>`
+            ).join('')}</div>`;
+        return `<div class="attribute-options-group"><label>${attr.label}:</label>${optionsHtml}</div>`;
+      }).join('');
+    }
+
+    const legacySizesHtml = (p.sizes && (!p.attributes || !p.attributes.some((a: any) => a.key === 'size')))
+      ? `<div class="attribute-options-group"><label>Talla:</label><div class="attribute-selector" data-attribute="size" data-product="${p.id}">${p.sizes.split(',').map((size: string, idx: number) =>
+          `<button class="attribute-btn ${idx === 0 ? 'active' : ''}" data-value="${size}">${size}</button>`
+        ).join('')}</div></div>` : '';
+
+    return `
+      <div class="product-card reveal">
+        <div class="product-img"><img src="${p.image_url}" alt="${p.name}" loading="lazy"></div>
+        <div class="product-info">
+          <div class="product-header"><h3>${p.name}</h3></div>
+          <div class="product-price" style="font-size:1.3rem;font-weight:700;color:var(--accent);margin:.5rem 0 .8rem;font-family:'Outfit',sans-serif;">${p.price > 0 ? `$${parseFloat(p.price).toFixed(2)}` : 'A consultar'}</div>
+          <p class="product-desc" style="min-height:auto;margin-bottom:1.2rem;">${p.description || ''}</p>
+          ${attributesHtml}${legacySizesHtml}
+          <div class="product-actions">
+            <div class="main-qty-selector">
+              <button class="qty-btn-main minus" data-id="${p.id}">-</button>
+              <input type="number" value="1" min="1" id="qty-${p.id}" class="qty-input">
+              <button class="qty-btn-main plus" data-id="${p.id}">+</button>
+            </div>
+            <button class="cta-btn product-cta add-to-cart" data-id="${p.id}" data-name="${p.name}" data-input="qty-${p.id}" data-icon="${p.icon || 'package'}">Agregar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  initReveal();
+};
+
+const fetchCatalog = async () => {
+  try {
+    const res = await fetch('/api/products');
+    if (!res.ok) throw new Error();
+    const products = await res.json() as any[];
+    catalogProducts = products;
+    renderCategoryFilters(products);
+    renderProducts(products);
+  } catch {
+    const container = document.getElementById('catalog-container');
+    if (container) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:#ff007f"><p>Error al cargar el catálogo. Por favor recarga la página.</p></div>';
+    }
+  }
+};
+
+// Event delegation catálogo
+document.getElementById('catalog-container')?.addEventListener('click', (e) => {
+  const target = e.target as HTMLElement;
+
+  const optionBtn = target.closest('.attribute-btn, .color-swatch-btn') as HTMLElement;
+  if (optionBtn) {
+    const selector = optionBtn.parentElement!;
+    selector.querySelectorAll('.attribute-btn, .color-swatch-btn').forEach(b => b.classList.remove('active'));
+    optionBtn.classList.add('active');
+    return;
+  }
+
+  const qtyBtn = target.closest('.qty-btn-main') as HTMLElement;
+  if (qtyBtn) {
+    const id = qtyBtn.getAttribute('data-id')!;
+    const input = document.getElementById(`qty-${id}`) as HTMLInputElement;
+    if (input) {
+      let val = parseInt(input.value) || 1;
+      if (qtyBtn.classList.contains('plus')) val++;
+      else if (qtyBtn.classList.contains('minus') && val > 1) val--;
+      input.value = String(val);
+    }
+    return;
+  }
+
+  const addBtn = target.closest('.add-to-cart') as HTMLElement;
+  if (addBtn) {
+    const id = addBtn.getAttribute('data-id')!;
+    const name = addBtn.getAttribute('data-name')!;
+    const icon = addBtn.getAttribute('data-icon') || 'package';
+    const input = document.getElementById(addBtn.getAttribute('data-input')!) as HTMLInputElement;
+    const qty = input ? parseInt(input.value) || 1 : 1;
+
+    const options: Record<string, string> = {};
+    const card = addBtn.closest('.product-card');
+    card?.querySelectorAll<HTMLElement>('[data-attribute]').forEach(sel => {
+      const key = sel.getAttribute('data-attribute')!;
+      const activeBtn = sel.querySelector<HTMLElement>('.active');
+      const val = activeBtn?.getAttribute('data-value');
+      if (val) options[key] = val;
+    });
+
+    addToCart(id, name, qty, icon, options);
+    if (input) input.value = '1';
+  }
+});
+
+// Filtros de categoría
+document.getElementById('category-filters')?.addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest('.category-filter-btn') as HTMLElement;
+  if (!btn) return;
+  activeCategory = btn.getAttribute('data-category')!;
+  document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  visibleCount = PAGE_SIZE; // Reset paginador
+  renderProducts(catalogProducts);
+});
+
+// Buscador en tiempo real
+document.getElementById('product-search')?.addEventListener('input', (e) => {
+  searchQuery = (e.target as HTMLInputElement).value;
+  visibleCount = PAGE_SIZE; // Reset paginador
+  renderProducts(catalogProducts);
+});
+
+// Botón Ver Más
+document.getElementById('load-more-btn')?.addEventListener('click', () => {
+  visibleCount += PAGE_SIZE;
+  renderProducts(catalogProducts);
+});
+
+// Inicialización
+window.addEventListener('load', () => {
+  initReveal();
+  fetchCatalog();
+  updateCartCount();
+});
+</script>

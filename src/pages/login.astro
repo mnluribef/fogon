@@ -1,0 +1,155 @@
+---
+// src/pages/login.astro - Página de inicio de sesión del panel admin
+
+const error = Astro.url.searchParams.get('error');
+const errorMsg: Record<string, string> = {
+  expired: 'Tu sesión ha expirado. Inicia sesión de nuevo.',
+  server: 'Error interno. Intenta de nuevo.',
+};
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÉLARA | Acceso Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #C9748A;
+      --accent: #B8860B;
+      --dark-bg: #0f0b0d;
+      --card-bg: rgba(35, 22, 28, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #fdf8f5;
+      --text-secondary: #c4a8b0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-bg);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(201, 116, 138, 0.18) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(184, 134, 11, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .login-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .logo { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; }
+    .logo svg { margin-right: 0.5rem; }
+    .logo span { color: var(--accent); }
+    .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; }
+    .error-msg { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
+    .field { margin-bottom: 1.25rem; text-align: left; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    .field input {
+      width: 100%; padding: 0.85rem 1rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border-color);
+      border-radius: 12px; color: var(--text-primary);
+      font-size: 0.95rem; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,116,138,0.2); }
+    .login-btn {
+      width: 100%; padding: 0.9rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(201,116,138,0.3);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+      <span>ÉL<span>ARA</span></span>
+    </div>
+    <p class="subtitle">Panel Administrativo — Acceso Restringido</p>
+
+    {error && <div class="error-msg">{errorMsg[error] || 'Credenciales incorrectas. Intenta de nuevo.'}</div>}
+    <div id="login-error" class="error-msg" style="display:none;"></div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Usuario</label>
+        <input type="text" id="username" name="username" autocomplete="username" required placeholder="admin">
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Iniciar Sesión</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('login-form') as HTMLFormElement;
+    const btn = document.getElementById('login-btn') as HTMLButtonElement;
+    const errDiv = document.getElementById('login-error') as HTMLElement;
+
+    const showError = (msg: string) => {
+      errDiv.textContent = msg;
+      errDiv.style.display = 'block';
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errDiv.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+
+      const username = (document.getElementById('username') as HTMLInputElement).value.trim();
+      const password = (document.getElementById('password') as HTMLInputElement).value;
+
+      // Hash SHA-256 en cliente (igual que el admin.js original)
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, passwordHash }),
+          credentials: 'include',
+        });
+        const data = await res.json() as { success: boolean; error?: string };
+        if (data.success) {
+          window.location.href = '/admin';
+        } else {
+          showError(data.error || 'Credenciales incorrectas.');
+        }
+      } catch {
+        showError('Error de red. Intenta de nuevo.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Iniciar Sesión';
+      }
+    });
+  </script>
+</body>
+</html>

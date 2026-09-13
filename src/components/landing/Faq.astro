@@ -1,0 +1,44 @@
+---
+// Faq.astro - Preguntas Frecuentes FOGÓN Restaurante
+const faqs = [
+  {
+    q: '¿Hacen delivery a domicilio?',
+    a: 'Sí, hacemos delivery en La Victoria y zonas aledañas. El tiempo de entrega promedio es de 30-45 minutos. El costo varía según la distancia. Consúltanos por WhatsApp para confirmar cobertura en tu zona.',
+  },
+  {
+    q: '¿Puedo personalizar mi pedido?',
+    a: 'Por supuesto. Puedes elegir el punto de cocción de las carnes, cambiar acompañantes o pedir sin algún ingrediente. Solo indícanos al hacer el pedido y lo preparamos a tu gusto.',
+  },
+  {
+    q: '¿Cuáles son los métodos de pago?',
+    a: 'Aceptamos pago móvil (Bancamóvil), transferencias bancarias, efectivo en Bs. y $, Zelle y Binance Pay. Coordinamos el pago al confirmar tu pedido por WhatsApp.',
+  },
+  {
+    q: '¿Cuáles son los horarios de atención?',
+    a: 'Atendemos de Lunes a Domingo de 11:00 AM a 10:00 PM. Los pedidos para delivery se reciben hasta las 9:30 PM. Para pedidos grandes o eventos, contáctanos con anticipación.',
+  },
+  {
+    q: '¿Hacen pedidos para grupos o eventos?',
+    a: 'Sí, con gusto atendemos pedidos corporativos, cumpleaños y eventos. Ofrecemos bandejas familiares y menús especiales para grupos. Contáctanos con al menos 24 horas de anticipación.',
+  },
+];
+---
+
+<section id="faq">
+  <div class="container" style="padding-top: 4rem;">
+    <div class="section-header reveal">
+      <h2>Preguntas <span>Frecuentes</span></h2>
+    </div>
+    <div class="faq-wrapper">
+      {faqs.map((item) => (
+        <div class="faq-card reveal">
+          <h4>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:6px; vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            {item.q}
+          </h4>
+          <p>{item.a}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

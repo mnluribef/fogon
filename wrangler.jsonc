@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fogon",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-05-02",
+  "observability": {
+    "enabled": true
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "fogon",
+      "database_name": "fogon",
+      "database_id": "f7524d1c-5139-45cd-af69-b156a54445c1"
+    }
+  ]
+}

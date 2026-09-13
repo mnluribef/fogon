@@ -1,0 +1,56 @@
+---
+// AdminLayout.astro - Layout del panel administrativo BELARA
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BELARA | Panel Administrativo VIP</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Lucide Icons via CDN (admin usa muchos iconos dinámicos en JS) -->
+  <script src="https://unpkg.com/lucide@latest" is:inline></script>
+
+  <!-- Admin CSS inline (copiado de admin.html) -->
+  <style is:global>
+    :root {
+      --primary: #00C2FF;
+      --accent: #FF1493;
+      --yellow: #FFD700;
+      --dark-bg: #0b0f19;
+      --card-bg: rgba(22, 29, 49, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --white: #ffffff;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(0, 194, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255, 20, 147, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+  </style>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <slot />
+</body>
+</html>

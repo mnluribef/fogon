@@ -1,0 +1,86 @@
+---
+// BaseLayout.astro - Layout principal de FOGÓN Restaurante
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = 'FOGÓN | Restaurante Venezolano | Delivery y Retiro · La Victoria, Aragua',
+  description = 'FOGÓN: Tu restaurante venezolano de confianza. Pabellón criollo, carnes a la parrilla, empanadas, postres y más. Delivery y retiro en local. Pedidos fáciles por WhatsApp.',
+  ogImage = '/assets/og_image.webp',
+} = Astro.props;
+
+const siteUrl = 'https://fogon.pages.dev';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const fullOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, siteUrl).toString();
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta name="keywords" content="restaurante venezolano, delivery comida, pabellón criollo, carnes a la parrilla, empanadas, tequeños, postres, La Victoria Aragua, comida a domicilio Venezuela">
+  <meta name="author" content="FOGÓN Restaurante">
+  <link rel="canonical" href={canonicalUrl}>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="restaurant">
+  <meta property="og:url" content={canonicalUrl}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:image" content={fullOgImage}>
+  <meta property="og:image:secure_url" content={fullOgImage}>
+  <meta property="og:image:width" content="1376">
+  <meta property="og:image:height" content="768">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content={canonicalUrl}>
+  <meta property="twitter:title" content={title}>
+  <meta property="twitter:description" content={description}>
+  <meta property="twitter:image" content={fullOgImage}>
+
+  <!-- Structured Data — Local Restaurant -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "FOGÓN",
+    "description": "Restaurante venezolano con delivery y retiro en local. Cocina artesanal con ingredientes frescos.",
+    "url": "https://fogon.pages.dev",
+    "telephone": "+58412-4756191",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "La Victoria",
+      "addressLocality": "La Victoria",
+      "addressRegion": "Aragua",
+      "addressCountry": "VE"
+    },
+    "openingHours": "Mo-Su 11:00-22:00",
+    "servesCuisine": "Venezuelan",
+    "priceRange": "$$",
+    "hasMenu": "https://fogon.pages.dev/#menu"
+  }
+  </script>
+
+  <!-- Google Fonts — Tipografía Restaurante Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/style.css?v=6">
+</head>
+<body>
+  <slot />
+</body>
+</html>

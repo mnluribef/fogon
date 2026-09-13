@@ -1,0 +1,58 @@
+---
+// Hero.astro - Sección hero de FOGÓN Restaurante
+---
+
+<!-- Hero Section -->
+<section class="hero-full">
+  <div class="hero-slider">
+    <div class="slide active"><img src="/assets/hero_main.webp" alt="Pabellón Criollo FOGÓN" loading="eager" fetchpriority="high"></div>
+    <div class="slide"><img src="/assets/hero_grill.webp" alt="Parrilla y Carnes al Fogón" loading="lazy"></div>
+    <div class="slide"><img src="/assets/hero_postres.webp" alt="Postres Artesanales FOGÓN" loading="lazy"></div>
+  </div>
+  <div class="hero-full-container">
+    <div class="hero-content">
+      <p class="hero-label">
+        <span>🔥 Restaurante Venezolano · La Victoria, Aragua</span>
+      </p>
+      <h1>Sabor que te <br><em>lleva a casa.</em></h1>
+      <p>Cocina venezolana con el alma de la abuela y el fuego del fogón. Delivery y retiro en local — pedidos fáciles por WhatsApp. ¡Come rico hoy!</p>
+      <div class="hero-buttons">
+        <a href="#menu" class="cta-btn">Ver el Menú</a>
+        <a href="https://wa.me/584124756191?text=Hola!%20Quiero%20hacer%20un%20pedido%20en%20FOG%C3%93N%20%F0%9F%8D%BD%EF%B8%8F" target="_blank" rel="noopener" class="btn-secondary">Pedir por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Stats Section -->
+<section class="stats-section bg-primary-light">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <h3>+800</h3>
+        <p>Pedidos Entregados</p>
+      </div>
+      <div class="stat-item reveal">
+        <h3>⭐ 4.9</h3>
+        <p>Calificación Promedio</p>
+      </div>
+      <div class="stat-item reveal">
+        <h3>🚀 Rápido</h3>
+        <p>Delivery Express</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Hero Slider
+  const slides = document.querySelectorAll<HTMLElement>('.slide');
+  if (slides.length > 0) {
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 5000);
+  }
+</script>

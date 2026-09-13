@@ -1,0 +1,52 @@
+---
+// Testimonials.astro - Reseñas de clientes de FOGÓN
+const StarSVG = `<svg viewBox="0 0 24 24" class="star-svg"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z" /></svg>`;
+const stars5 = StarSVG.repeat(5);
+
+const testimonials = [
+  {
+    review: '"El pabellón criollo llegó perfectamente caliente y listo para comer. La carne mechada estaba jugosa y con sazón de verdad. ¡Definitivamente el mejor delivery de la zona!"',
+    name: 'María González',
+    role: 'Cliente frecuente',
+    img: '/assets/client_maria.webp',
+  },
+  {
+    review: '"El churrasco es INCREÍBLE. Las porciones son generosas, el precio justo y el delivery súper rápido. Ya pedimos para la familia entera y todos quedaron felices. 100% recomendado."',
+    name: 'Ana Pérez',
+    role: 'Madre de familia',
+    img: '/assets/client_ana.webp',
+  },
+  {
+    review: '"Los tequeños y el quesillo son de otro nivel. Pedimos para la oficina y todos querían el contacto de FOGÓN. El proceso por WhatsApp fue facilísimo. ¡Gracias por tanto!"',
+    name: 'Carlos Rodríguez',
+    role: 'Empresario',
+    img: '/assets/client_jose.webp',
+  },
+];
+---
+
+<section id="testimonios">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>Lo que dicen <span>nuestros clientes</span></h2>
+      <p>Cada plato cuenta una historia. Lee lo que dicen quienes ya probaron el sabor de FOGÓN.</p>
+    </div>
+    <div class="testimonials-grid">
+      {testimonials.map((t) => (
+        <div class="testimonial-card reveal">
+          <div class="stars" set:html={stars5} />
+          <p class="review">{t.review}</p>
+          <div class="client-info">
+            <div class="client-avatar">
+              <img src={t.img} alt={t.name} loading="lazy">
+            </div>
+            <div>
+              <h4>{t.name}</h4>
+              <p>{t.role}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
