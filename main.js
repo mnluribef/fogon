@@ -378,7 +378,7 @@ if (whatsappOrderBtn) {
             if (result.success) {
                 const orderId = result.orderId;
                 const phoneNumber = CONFIG.WHATSAPP_NUMBER;
-                let message = `¡Hola ÉLARA! 👋✨\n\nHe realizado un pedido en la web.\n*Número de Pedido:* #${orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Artículos del pedido:*\n`;
+                let message = `¡Hola Fogon! 👋✨\n\nHe realizado un pedido en la web.\n*Número de Pedido:* #${orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Artículos del pedido:*\n`;
 
                 cart.forEach(item => {
                     let optionsString = "";

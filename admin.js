@@ -1,4 +1,4 @@
-// Lógica del Panel Administrativo - ÉLARA
+// Lógica del Panel Administrativo - Fogon
 
 // Variables de estado
 let currentAdmin = null;
@@ -583,7 +583,7 @@ async function viewOrderDetails(orderId) {
         if (btnChat) {
             // Limpiar teléfono por seguridad de URL
             const cleanPhone = order.client_phone.replace(/[^\d]/g, '');
-            const message = `Hola ${order.client_name}, te contacto de *ÉLARA* con respecto a tu pedido *#${order.id}*...`;
+            const message = `Hola ${order.client_name}, te contacto de *Fogon* con respecto a tu pedido *#${order.id}*...`;
             btnChat.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
         }
 
