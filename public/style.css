@@ -1182,7 +1182,7 @@ footer::before {
 
 /* Decoración de fondo */
 footer::after {
-    content: 'ÉLARA';
+    content: 'FOGÓN';
     position: absolute;
     bottom: -1.5rem;
     right: 3%;
