@@ -155,10 +155,10 @@ INSERT OR REPLACE INTO products (id, name, description, price, category, icon, i
 ('combo-arepero',     'Mega Combo Arepero',          'Degustación de 4 arepas (Reina, Pelúa, Dominó, Sifrina) con una ración de nata extra y 4 bebidas.', 35.0, 'combos', 'package-2', 'assets/product_combo_arepero.webp', NULL, 'combos', 1),
 -- Más Postres
 ('marquesa-choco',    'Marquesa de Chocolate',       'Postre frío de capas de galleta María intercaladas con una suave y rica crema de chocolate.', 5.5, 'postres', 'cake', 'assets/product_marquesa_choco.webp', NULL, 'postres', 1),
-('golfeados',         'Golfeados con Queso',         'Panecillos dulces enrollados con papelón, anís y queso, coronados con un generoso trozo de queso de mano.', 4.5, 'postres', 'cake', 'https://loremflickr.com/600/600/food,pastry/all?lock=14', NULL, 'postres', 1),
+('golfeados',         'Golfeados con Queso',         'Panecillos dulces enrollados con papelón, anís y queso, coronados con un generoso trozo de queso de mano.', 4.5, 'postres', 'cake', 'assets/product_golfeados.webp', NULL, 'postres', 1),
 -- Más Bebidas
-('papelon-limon',     'Papelón con Limón',           'Refrescante bebida tradicional de panela (papelón) con el toque perfecto de acidez del limón criollo.', 2.5, 'bebidas', 'cup-soda', 'https://loremflickr.com/600/600/food,lemonade/all?lock=15', NULL, 'bebidas', 1),
-('chicha-venezolana', 'Chicha Venezolana',           'Bebida espesa y dulce a base de arroz y leche, servida muy fría con abundante hielo, canela y leche condensada.', 4.0, 'bebidas', 'cup-soda', 'https://loremflickr.com/600/600/food,smoothie/all?lock=16', NULL, 'bebidas', 1);
+('papelon-limon',     'Papelón con Limón',           'Refrescante bebida tradicional de panela (papelón) con el toque perfecto de acidez del limón criollo.', 2.5, 'bebidas', 'cup-soda', 'assets/product_papelon_limon.webp', NULL, 'bebidas', 1),
+('chicha-venezolana', 'Chicha Venezolana',           'Bebida espesa y dulce a base de arroz y leche, servida muy fría con abundante hielo, canela y leche condensada.', 4.0, 'bebidas', 'cup-soda', 'assets/product_chicha.webp', NULL, 'bebidas', 1);
 
 
 -- Insertar usuario admin inicial (contraseña por defecto: "admin123" usando hash SHA-256 legacy)
