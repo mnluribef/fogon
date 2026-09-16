@@ -41,7 +41,12 @@
 <div id="cart-overlay" class="cart-overlay"></div>
 <div id="cart-drawer" class="cart-drawer">
   <div class="cart-header">
-    <h3>🛒 Tu Pedido</h3>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <button id="cart-back-btn" aria-label="Volver" style="display: none; background: rgba(255,255,255,0.15); border: none; cursor: pointer; color: var(--white); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h3 id="cart-title" style="margin: 0;">🛒 Tu Pedido</h3>
+    </div>
     <div class="cart-header-actions">
       <button id="clear-cart" class="clear-cart-btn" title="Vaciar Carrito">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
@@ -51,14 +56,13 @@
       </button>
     </div>
   </div>
-  <div id="cart-items" class="cart-items">
-    <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
+  <div id="cart-step-1" class="cart-step active" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+    <div id="cart-items" class="cart-items" style="flex: 1; overflow-y: auto;">
+      <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
+    </div>
   </div>
-  <div id="cart-total-fixed" style="display: none; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.06); font-weight: bold; font-size: 1.2rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); z-index: 10;">
-    <span>Total:</span>
-    <span id="cart-total-amount" style="color: var(--accent);">$0.00</span>
-  </div>
-  <div class="cart-customer-form" id="cart-customer-form" style="padding: 1.2rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); display: none; background: rgba(0,0,0,0.015);">
+
+  <div id="cart-step-2" class="cart-step" style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;">
     <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Datos de Contacto
@@ -91,8 +95,54 @@
       <input type="text" id="delivery-address" placeholder="Ej. Calle 5, Res. Los Mangos, Apto 4" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
     </div>
   </div>
+
+  <div id="cart-step-3" class="cart-step" style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;">
+    <div style="width: 100%;">
+      <label for="payment-method" style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;">Método de Pago</label>
+      <select id="payment-method" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s; appearance: auto;">
+        <option value="" disabled selected>Selecciona un método...</option>
+        <option value="pago_movil">📱 Pago Móvil</option>
+        <option value="zelle">🇺🇸 Zelle</option>
+        <option value="efectivo">💵 Efectivo (Divisas / Bs)</option>
+        <option value="punto">💳 Punto de Venta (Sólo Retiro)</option>
+      </select>
+    </div>
+
+    <!-- Payment info panels -->
+    <div id="payment-info-pago-movil" style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);">
+      <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">Datos para Pago Móvil:</p>
+      <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
+        <li><strong>Banco:</strong> Banesco (0134)</li>
+        <li><strong>Teléfono:</strong> 0414-1234567</li>
+        <li><strong>C.I:</strong> V-12345678</li>
+      </ul>
+    </div>
+    
+    <div id="payment-info-zelle" style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);">
+      <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">Datos para Zelle:</p>
+      <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
+        <li><strong>Correo:</strong> pagos@fogon.com</li>
+        <li><strong>Titular:</strong> Fogon LLC</li>
+      </ul>
+    </div>
+
+    <div id="payment-reference-container" style="display: none; width: 100%; margin-top: 1rem;">
+      <label for="payment-reference" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Número de Referencia</label>
+      <input type="text" id="payment-reference" placeholder="Ej. 123456" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+    </div>
+  </div>
+
+  <div id="cart-total-fixed" style="display: none; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.06); font-weight: bold; font-size: 1.2rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); z-index: 10;">
+    <span>Total:</span>
+    <span id="cart-total-amount" style="color: var(--accent);">$0.00</span>
+  </div>
+
   <div class="cart-footer">
-    <button id="whatsapp-order-btn" class="cta-btn whatsapp-btn" disabled>
+    <button id="cart-next-btn" class="cta-btn" disabled style="width: 100%; margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 0.5rem; align-items: center;">
+      Continuar (Datos) 
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button id="whatsapp-order-btn" class="cta-btn whatsapp-btn" style="display: none;">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Enviar Pedido por WhatsApp
     </button>
@@ -184,16 +234,18 @@ const renderCart = () => {
   
   if (!container) return;
 
+  const nextBtn = document.getElementById('cart-next-btn') as HTMLButtonElement;
+  
   if (cart.length === 0) {
     container.innerHTML = '<div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>';
     if (waBtn) waBtn.disabled = true;
-    if (form) form.style.display = 'none';
+    if (nextBtn) nextBtn.disabled = true;
     if (totalFixed) totalFixed.style.display = 'none';
     return;
   }
 
   if (waBtn) waBtn.disabled = false;
-  if (form) form.style.display = 'block';
+  if (nextBtn) nextBtn.disabled = false;
 
   const labels: Record<string, string> = { size: 'Tamaño', proteina: 'Proteína', punto: 'Punto', salsa: 'Salsa', finish: 'Acabado' };
 
@@ -248,12 +300,81 @@ const renderCart = () => {
   }
 };
 
+let currentCartStep = 1;
+
+const updateCartStepUI = () => {
+  const s1 = document.getElementById('cart-step-1');
+  const s2 = document.getElementById('cart-step-2');
+  const s3 = document.getElementById('cart-step-3');
+  if (s1) s1.style.display = currentCartStep === 1 ? 'flex' : 'none';
+  if (s2) s2.style.display = currentCartStep === 2 ? 'flex' : 'none';
+  if (s3) s3.style.display = currentCartStep === 3 ? 'flex' : 'none';
+  
+  const title = document.getElementById('cart-title');
+  const backBtn = document.getElementById('cart-back-btn');
+  const nextBtn = document.getElementById('cart-next-btn');
+  const waBtn = document.getElementById('whatsapp-order-btn');
+  
+  if (currentCartStep === 1) {
+    if (title) title.innerHTML = '🛒 Tu Pedido';
+    if (backBtn) backBtn.style.display = 'none';
+    if (nextBtn) { 
+      nextBtn.style.display = 'flex'; 
+      nextBtn.innerHTML = 'Continuar (Datos) <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>'; 
+    }
+    if (waBtn) waBtn.style.display = 'none';
+  } else if (currentCartStep === 2) {
+    if (title) title.innerHTML = '📦 Entrega';
+    if (backBtn) backBtn.style.display = 'flex';
+    if (nextBtn) { 
+      nextBtn.style.display = 'flex'; 
+      nextBtn.innerHTML = 'Continuar al Pago <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>'; 
+    }
+    if (waBtn) waBtn.style.display = 'none';
+  } else if (currentCartStep === 3) {
+    if (title) title.innerHTML = '💳 Pago';
+    if (backBtn) backBtn.style.display = 'flex';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (waBtn) waBtn.style.display = 'flex';
+  }
+};
+
+(window as any).goToStep = (step: number) => {
+  if (step === 2) {
+    if (cart.length === 0) return showToast('⚠️ Tu carrito está vacío');
+  }
+  if (step === 3) {
+    const nameInput = document.getElementById('client-name') as HTMLInputElement;
+    const phoneInput = document.getElementById('client-phone') as HTMLInputElement;
+    const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
+    const addressInput = document.getElementById('delivery-address') as HTMLInputElement;
+    
+    if (!nameInput?.value.trim() || !phoneInput?.value.trim()) {
+      showToast('⚠️ Ingresa tu nombre y teléfono.');
+      if (!nameInput?.value.trim()) nameInput?.focus(); else phoneInput?.focus();
+      return;
+    }
+    if (deliveryTypeInput?.value === 'delivery' && !addressInput?.value.trim()) {
+      showToast('⚠️ Ingresa tu dirección para el delivery.');
+      addressInput?.focus();
+      return;
+    }
+  }
+  currentCartStep = step;
+  updateCartStepUI();
+};
+
 const toggleCart = () => {
   const drawer = document.getElementById('cart-drawer');
   const overlay = document.getElementById('cart-overlay');
   drawer?.classList.toggle('active');
   overlay?.classList.toggle('active');
-  if (drawer?.classList.contains('active')) renderCart();
+  if (drawer?.classList.contains('active')) {
+    renderCart();
+    updateCartStepUI();
+  } else {
+    setTimeout(() => { currentCartStep = 1; updateCartStepUI(); }, 350);
+  }
 };
 
 const removeFromCart = (key: string) => {
@@ -293,6 +414,14 @@ document.getElementById('cart-btn')?.addEventListener('click', toggleCart);
 document.getElementById('close-cart')?.addEventListener('click', toggleCart);
 document.getElementById('cart-overlay')?.addEventListener('click', toggleCart);
 
+document.getElementById('cart-back-btn')?.addEventListener('click', () => {
+  if (currentCartStep > 1) (window as any).goToStep(currentCartStep - 1);
+});
+
+document.getElementById('cart-next-btn')?.addEventListener('click', () => {
+  if (currentCartStep < 3) (window as any).goToStep(currentCartStep + 1);
+});
+
 const confirmModal = document.getElementById('confirm-modal');
 document.getElementById('clear-cart')?.addEventListener('click', () => {
   if (cart.length > 0) confirmModal?.classList.add('active');
@@ -312,8 +441,31 @@ document.querySelectorAll('input[name="delivery-type"]').forEach(radio => {
     if (addressContainer) {
       addressContainer.style.display = (e.target as HTMLInputElement).value === 'delivery' ? 'block' : 'none';
     }
+    
+    // Punto de Venta es solo para retiro
+    const paymentSelect = document.getElementById('payment-method') as HTMLSelectElement;
+    if (paymentSelect && (e.target as HTMLInputElement).value === 'delivery' && paymentSelect.value === 'punto') {
+        paymentSelect.value = '';
+    }
+    const puntoOption = paymentSelect?.querySelector('option[value="punto"]') as HTMLOptionElement;
+    if (puntoOption) {
+        puntoOption.disabled = (e.target as HTMLInputElement).value === 'delivery';
+    }
+    
     renderCart(); // Recalculate total dynamically
   });
+});
+
+// --- PAYMENT TOGGLE ---
+document.getElementById('payment-method')?.addEventListener('change', (e) => {
+  const method = (e.target as HTMLSelectElement).value;
+  const refContainer = document.getElementById('payment-reference-container');
+  const infoPagoMovil = document.getElementById('payment-info-pago-movil');
+  const infoZelle = document.getElementById('payment-info-zelle');
+  
+  if (infoPagoMovil) infoPagoMovil.style.display = method === 'pago_movil' ? 'block' : 'none';
+  if (infoZelle) infoZelle.style.display = method === 'zelle' ? 'block' : 'none';
+  if (refContainer) refContainer.style.display = (method === 'pago_movil' || method === 'zelle') ? 'block' : 'none';
 });
 
 // --- WHATSAPP ORDER ---
@@ -328,15 +480,20 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
   const addressInput = document.getElementById('delivery-address') as HTMLInputElement;
   const deliveryAddress = addressInput?.value.trim() || '';
 
-  if (!clientName || !clientPhone) {
-    showToast('⚠️ Ingresa tu nombre y teléfono.');
-    if (!clientName) nameInput?.focus(); else phoneInput?.focus();
+  const paymentSelect = document.getElementById('payment-method') as HTMLSelectElement;
+  const paymentMethod = paymentSelect?.value || '';
+  const paymentRefInput = document.getElementById('payment-reference') as HTMLInputElement;
+  const paymentReference = paymentRefInput?.value.trim() || '';
+
+  if (!paymentMethod) {
+    showToast('⚠️ Selecciona un método de pago.');
+    paymentSelect?.focus();
     return;
   }
   
-  if (deliveryType === 'delivery' && !deliveryAddress) {
-    showToast('⚠️ Ingresa tu dirección para el delivery.');
-    addressInput?.focus();
+  if ((paymentMethod === 'pago_movil' || paymentMethod === 'zelle') && !paymentReference) {
+    showToast('⚠️ Ingresa el número de referencia del pago.');
+    paymentRefInput?.focus();
     return;
   }
 
@@ -348,7 +505,7 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientName, clientPhone, deliveryType, deliveryAddress, items: cart }),
+      body: JSON.stringify({ clientName, clientPhone, deliveryType, deliveryAddress, paymentMethod, paymentReference, items: cart }),
     });
     if (!res.ok) throw new Error();
     const result = await res.json() as { success: boolean; orderId?: string; error?: string };
@@ -370,11 +527,22 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
         msg += `\n*Dirección:* ${deliveryAddress}`;
       }
       
-      msg += `\n\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido y el método de pago. ¡Gracias!*`;
+      const paymentLabels: Record<string, string> = { pago_movil: '📱 Pago Móvil', zelle: '🇺🇸 Zelle', efectivo: '💵 Efectivo', punto: '💳 Punto de Venta' };
+      msg += `\n*Pago:* ${paymentLabels[paymentMethod] || paymentMethod}`;
+      if (paymentReference) {
+        msg += `\n*Referencia:* ${paymentReference}`;
+      }
+      
+      msg += `\n\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido. ¡Gracias!*`;
 
       cart = []; saveCart(); updateCartCount(); renderCart();
       if (nameInput) nameInput.value = '';
       if (phoneInput) phoneInput.value = '';
+      if (paymentSelect) paymentSelect.value = '';
+      if (paymentRefInput) paymentRefInput.value = '';
+      if (document.getElementById('payment-reference-container')) document.getElementById('payment-reference-container')!.style.display = 'none';
+      if (document.getElementById('payment-info-pago-movil')) document.getElementById('payment-info-pago-movil')!.style.display = 'none';
+      if (document.getElementById('payment-info-zelle')) document.getElementById('payment-info-zelle')!.style.display = 'none';
       toggleCart();
       showToast(`🎉 ¡Pedido #${result.orderId} registrado con éxito!`);
       window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');

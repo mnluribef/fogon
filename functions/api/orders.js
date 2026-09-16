@@ -68,7 +68,7 @@ export async function onRequestPost(context) {
 
     try {
         const data = await request.json();
-        const { clientName, clientPhone, deliveryType = 'delivery', deliveryAddress = '', deliveryNotes = '', items } = data;
+        const { clientName, clientPhone, deliveryType = 'retiro', deliveryAddress = '', deliveryNotes = '', paymentMethod = '', paymentReference = '', items } = data;
 
         if (!clientName || !clientPhone || !items || !Array.isArray(items) || items.length === 0) {
             return new Response(JSON.stringify({ error: "Datos del pedido incompletos o inválidos." }), {
@@ -116,7 +116,7 @@ export async function onRequestPost(context) {
         // 1. Sentencia para insertar el Pedido
         statements.push(
             db.prepare(
-                "INSERT INTO orders (id, client_name, client_phone, delivery_type, delivery_address, delivery_notes, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO orders (id, client_name, client_phone, delivery_type, delivery_address, delivery_notes, payment_method, payment_reference, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(
                 orderId,
@@ -125,6 +125,8 @@ export async function onRequestPost(context) {
                 deliveryType,
                 deliveryAddress.trim(),
                 deliveryNotes.trim(),
+                paymentMethod,
+                paymentReference.trim(),
                 "pendiente",
                 totalItems, // Se actualizará al final
                 totalPrice // Se actualizará al final
