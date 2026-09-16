@@ -18,10 +18,6 @@
         <li><a href="#faq">PREGUNTAS</a></li>
       </ul>
       <div class="header-actions">
-        <a href="https://wa.me/584124756191?text=Hola!%20Quiero%20hacer%20un%20pedido%20en%20FOG%C3%93N%20🍽️" target="_blank" rel="noopener" class="cta-btn" style="padding: 0.55rem 1.3rem; font-size: 0.8rem; display: none;" id="header-wa-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Pedir Ahora
-        </a>
         <button
           id="mobile-menu-btn"
           aria-label="Abrir menú"
@@ -37,11 +33,9 @@
 <script>
   // Navbar scroll effect
   const header = document.querySelector('.glass-nav') as HTMLElement;
-  const headerWaBtn = document.getElementById('header-wa-btn') as HTMLElement;
   if (header) {
     window.addEventListener('scroll', () => {
       header.classList.toggle('scrolled', window.scrollY > 50);
-      if (headerWaBtn) headerWaBtn.style.display = window.scrollY > 300 ? 'inline-flex' : 'none';
     }, { passive: true });
   }
 
