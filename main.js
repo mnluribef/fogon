@@ -496,18 +496,18 @@ let activeCategory = 'all';
 
 const categoryNames = {
     'all': 'Todo',
-    'clothing': 'Ropa',
-    'bags': 'Carteras & Bolsos',
-    'accessories': 'Accesorios',
-    'makeup': 'Maquillaje'
+    'grill': 'Parrillas',
+    'steaks': 'Cortes Premium',
+    'burgers': 'Hamburguesas',
+    'drinks': 'Bebidas'
 };
 
 const categoryIcons = {
     'all': 'layout-grid',
-    'clothing': 'shirt',
-    'bags': 'shopping-bag',
-    'accessories': 'gem',
-    'makeup': 'sparkles'
+    'grill': 'flame',
+    'steaks': 'beef',
+    'burgers': 'sandwich',
+    'drinks': 'cup-soda'
 };
 
 const colorMap = {
