@@ -145,7 +145,7 @@ const showToast = (message: string) => {
 };
 
 // --- CART ---
-let cart: Array<{ key: string; name: string; qty: number; icon: string; options: Record<string, string> }> =
+let cart: Array<{ key: string; name: string; price?: number; qty: number; icon: string; options: Record<string, string> }> =
   JSON.parse(localStorage.getItem('fogon_cart') || '[]');
 
 const saveCart = () => localStorage.setItem('fogon_cart', JSON.stringify(cart));
@@ -177,6 +177,10 @@ const renderCart = () => {
   const labels: Record<string, string> = { size: 'Tamaño', proteina: 'Proteína', punto: 'Punto', salsa: 'Salsa', finish: 'Acabado' };
 
   container.innerHTML = cart.map(item => {
+    if (item.price === undefined) {
+      const prod = catalogProducts.find(p => p.name === item.name);
+      item.price = prod ? parseFloat(prod.price) : 0;
+    }
     const sizeText = Object.entries(item.options || {})
       .filter(([, v]) => v)
       .map(([k, v]) => `<span class="cart-item-option">${labels[k] || k}: ${v}</span>`)
@@ -185,9 +189,16 @@ const renderCart = () => {
       <div class="cart-item">
         <div class="item-info">
           <div class="item-title-row">
-            <div class="item-details">
-              <h4>${item.name}</h4>
-              <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.2rem;">${sizeText}</div>
+            <div class="item-details" style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+                <h4 style="margin:0; flex:1;">${item.name}</h4>
+                <span style="font-weight: 600; color: var(--accent); white-space:nowrap; margin-top:1px;">
+                  $${item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar'}
+                </span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;">
+                ${sizeText}
+              </div>
             </div>
           </div>
         </div>
@@ -201,6 +212,14 @@ const renderCart = () => {
         </div>
       </div>`;
   }).join('');
+
+  const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0);
+  container.innerHTML += `
+    <div class="cart-total" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; margin-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;">
+      <span>Total:</span>
+      <span style="color: var(--accent);">$${totalPrice.toFixed(2)}</span>
+    </div>
+  `;
 };
 
 const toggleCart = () => {
@@ -224,14 +243,15 @@ const updateQty = (key: string, delta: number) => {
   else { saveCart(); renderCart(); updateCartCount(); }
 };
 
-const addToCart = (id: string, name: string, qty = 1, icon = 'package', options: Record<string, string> = {}) => {
+const addToCart = (id: string, name: string, price: number, qty = 1, icon = 'package', options: Record<string, string> = {}) => {
   const optionsKey = Object.keys(options).sort().map(k => options[k]).join('-');
   const itemKey = optionsKey ? `${id}-${optionsKey}` : id;
   const existing = cart.find(i => i.key === itemKey);
   if (existing) {
     existing.qty += qty;
+    if (existing.price === undefined) existing.price = price;
   } else {
-    cart.push({ key: itemKey, name, qty, icon, options });
+    cart.push({ key: itemKey, name, price, qty, icon, options });
   }
   saveCart();
   updateCartCount();
@@ -290,10 +310,12 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
       cart.forEach(item => {
         const opts = Object.entries(item.options || {}).filter(([, v]) => v)
           .map(([k, v]) => `${labels[k] || k}: ${v}`).join(', ');
-        msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ''}\n`;
+        const itemTotal = item.price && item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar';
+        msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ''} - $${itemTotal}\n`;
       });
-      const total = cart.reduce((s, i) => s + i.qty, 0);
-      msg += `\n*Total de platillos:* ${total}\n\n🚀 *Por favor confírmen el pedido, indica si es DELIVERY o RETIRO EN LOCAL y el método de pago. ¡Gracias!*`;
+      const totalCount = cart.reduce((s, i) => s + i.qty, 0);
+      const totalPrice = cart.reduce((s, i) => s + ((i.price || 0) * i.qty), 0);
+      msg += `\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido, indica si es DELIVERY o RETIRO EN LOCAL y el método de pago. ¡Gracias!*`;
 
       cart = []; saveCart(); updateCartCount(); renderCart();
       if (nameInput) nameInput.value = '';
@@ -410,7 +432,7 @@ const renderProducts = (products: any[]) => {
               <input type="number" value="1" min="1" id="qty-${p.id}" class="qty-input">
               <button class="qty-btn-main plus" data-id="${p.id}">+</button>
             </div>
-            <button class="cta-btn product-cta add-to-cart" data-id="${p.id}" data-name="${p.name}" data-input="qty-${p.id}" data-icon="${p.icon || 'package'}">Agregar</button>
+            <button class="cta-btn product-cta add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-input="qty-${p.id}" data-icon="${p.icon || 'package'}">Agregar</button>
           </div>
         </div>
       </div>`;
@@ -464,6 +486,7 @@ document.getElementById('catalog-container')?.addEventListener('click', (e) => {
   if (addBtn) {
     const id = addBtn.getAttribute('data-id')!;
     const name = addBtn.getAttribute('data-name')!;
+    const price = parseFloat(addBtn.getAttribute('data-price') || '0');
     const icon = addBtn.getAttribute('data-icon') || 'package';
     const input = document.getElementById(addBtn.getAttribute('data-input')!) as HTMLInputElement;
     const qty = input ? parseInt(input.value) || 1 : 1;
@@ -477,7 +500,7 @@ document.getElementById('catalog-container')?.addEventListener('click', (e) => {
       if (val) options[key] = val;
     });
 
-    addToCart(id, name, qty, icon, options);
+    addToCart(id, name, price, qty, icon, options);
     if (input) input.value = '1';
   }
 });

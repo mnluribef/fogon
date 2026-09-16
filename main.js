@@ -293,6 +293,16 @@ const renderCart = () => {
     let html = cart.map(item => {
         const icon = item.icon && item.icon !== 'package' ? item.icon : (iconMap[item.name] || 'package');
         
+        // Recuperar precio si es un item viejo en el carrito sin precio guardado
+        if (item.price === undefined) {
+            const product = catalogProducts.find(p => p.name === item.name);
+            if (product) {
+                item.price = product.price;
+            } else {
+                item.price = 0;
+            }
+        }
+        
         let sizeText = "";
         if (item.options && typeof item.options === 'object') {
             const labels = {
