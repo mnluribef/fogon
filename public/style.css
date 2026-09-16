@@ -1797,7 +1797,10 @@ a.footer-contact-link:hover {
 }
 
 @media (max-width: 768px) {
-    .hero-full { padding-bottom: 5rem; }
+    .hero-full { 
+        align-items: center;
+        padding-bottom: 0;
+    }
     .hero-full-container { padding-left: 5%; }
 
     #mobile-menu-btn {
