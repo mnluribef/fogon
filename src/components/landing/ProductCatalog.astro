@@ -187,28 +187,26 @@ const renderCart = () => {
       .join('');
     return `
       <div class="cart-item">
-        <div class="item-info">
-          <div class="item-title-row">
-            <div class="item-details" style="flex:1; min-width:0;">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
-                <h4 style="margin:0; flex:1;">${item.name}</h4>
-                <span style="font-weight: 600; color: var(--accent); white-space:nowrap; margin-top:1px;">
-                  $${item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar'}
-                </span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;">
-                ${sizeText}
-              </div>
+        <div class="item-info" style="flex:1; min-width:0; padding-right:1rem;">
+          <div class="item-details">
+            <h4 style="margin:0;">${item.name}</h4>
+            <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;">
+              ${sizeText}
             </div>
           </div>
         </div>
-        <div class="item-qty">
+        <div class="item-qty" style="flex-shrink:0;">
           <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', -1)">-</button>
-          <span>${item.qty}</span>
+          <span style="min-width: 1.2rem; text-align:center;">${item.qty}</span>
           <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', 1)">+</button>
-          <button class="remove-item" onclick="window._cart.removeFromCart('${item.key}')">
+          <button class="remove-item" onclick="window._cart.removeFromCart('${item.key}')" style="margin-left: 0.3rem;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           </button>
+        </div>
+        <div class="item-price" style="flex-shrink:0; text-align:right; min-width:70px;">
+          <span style="font-weight: 600; color: var(--accent); font-size:1.05rem;">
+            $${item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar'}
+          </span>
         </div>
       </div>`;
   }).join('');
