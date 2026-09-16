@@ -173,6 +173,10 @@ export async function onRequestPost(context) {
             );
         }
 
+        if (deliveryType === 'delivery') {
+            totalPrice += 5.0;
+        }
+
         // 3. Sentencia final para actualizar totales del pedido
         statements.push(
             db.prepare("UPDATE orders SET total_items = ?, total_price = ? WHERE id = ?")

@@ -54,6 +54,10 @@
   <div id="cart-items" class="cart-items">
     <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
   </div>
+  <div id="cart-total-fixed" style="display: none; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.06); font-weight: bold; font-size: 1.2rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); z-index: 10;">
+    <span>Total:</span>
+    <span id="cart-total-amount" style="color: var(--accent);">$0.00</span>
+  </div>
   <div class="cart-customer-form" id="cart-customer-form" style="padding: 1.2rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); display: none; background: rgba(0,0,0,0.015);">
     <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -69,12 +73,25 @@
         <input type="tel" id="client-phone" placeholder="Ej. +58 412-4756191" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
       </div>
     </div>
+    
+    <div style="width: 100%; margin-top: 1.2rem;">
+      <label style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;">Opciones de Entrega</label>
+      <div style="display: flex; gap: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
+          <input type="radio" name="delivery-type" value="retiro" checked style="accent-color: var(--accent);"> 🏪 Retiro en local
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
+          <input type="radio" name="delivery-type" value="delivery" style="accent-color: var(--accent);"> 🛵 Delivery (+$5)
+        </label>
+      </div>
+    </div>
+    
+    <div id="delivery-address-container" style="width: 100%; margin-top: 1rem; display: none;">
+      <label for="delivery-address" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Dirección de Entrega</label>
+      <input type="text" id="delivery-address" placeholder="Ej. Calle 5, Res. Los Mangos, Apto 4" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+    </div>
   </div>
   <div class="cart-footer">
-    <p class="cart-note">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-      ¿Vas a pedir delivery? Indícanos tu dirección al confirmar por WhatsApp.
-    </p>
     <button id="whatsapp-order-btn" class="cta-btn whatsapp-btn" disabled>
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Enviar Pedido por WhatsApp
@@ -162,12 +179,16 @@ const renderCart = () => {
   const container = document.getElementById('cart-items');
   const form = document.getElementById('cart-customer-form') as HTMLElement;
   const waBtn = document.getElementById('whatsapp-order-btn') as HTMLButtonElement;
+  const totalFixed = document.getElementById('cart-total-fixed') as HTMLElement;
+  const totalAmount = document.getElementById('cart-total-amount');
+  
   if (!container) return;
 
   if (cart.length === 0) {
     container.innerHTML = '<div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>';
     if (waBtn) waBtn.disabled = true;
     if (form) form.style.display = 'none';
+    if (totalFixed) totalFixed.style.display = 'none';
     return;
   }
 
@@ -211,13 +232,20 @@ const renderCart = () => {
       </div>`;
   }).join('');
 
-  const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0);
-  container.innerHTML += `
-    <div class="cart-total" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; margin-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;">
-      <span>Total:</span>
-      <span style="color: var(--accent);">$${totalPrice.toFixed(2)}</span>
-    </div>
-  `;
+  const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
+  const deliveryType = deliveryTypeInput?.value || 'retiro';
+  const deliveryCost = deliveryType === 'delivery' ? 5 : 0;
+  
+  const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0) + deliveryCost;
+  
+  if (totalFixed) {
+    totalFixed.style.display = 'flex';
+    if (totalAmount) {
+      totalAmount.innerHTML = deliveryCost > 0 
+        ? `$${totalPrice.toFixed(2)} <span style="font-size:0.75rem; font-weight:normal; color:var(--text-light); margin-left:4px;">(Incl. $5 Delivery)</span>` 
+        : `$${totalPrice.toFixed(2)}`;
+    }
+  }
 };
 
 const toggleCart = () => {
@@ -277,16 +305,38 @@ document.getElementById('modal-confirm')?.addEventListener('click', () => {
   showToast('Bolso vaciado');
 });
 
+// --- DELIVERY TOGGLE ---
+const addressContainer = document.getElementById('delivery-address-container');
+document.querySelectorAll('input[name="delivery-type"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    if (addressContainer) {
+      addressContainer.style.display = (e.target as HTMLInputElement).value === 'delivery' ? 'block' : 'none';
+    }
+    renderCart(); // Recalculate total dynamically
+  });
+});
+
 // --- WHATSAPP ORDER ---
 document.getElementById('whatsapp-order-btn')?.addEventListener('click', async () => {
   const nameInput = document.getElementById('client-name') as HTMLInputElement;
   const phoneInput = document.getElementById('client-phone') as HTMLInputElement;
   const clientName = nameInput?.value.trim() || '';
   const clientPhone = phoneInput?.value.trim() || '';
+  
+  const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
+  const deliveryType = deliveryTypeInput?.value || 'retiro';
+  const addressInput = document.getElementById('delivery-address') as HTMLInputElement;
+  const deliveryAddress = addressInput?.value.trim() || '';
 
   if (!clientName || !clientPhone) {
     showToast('⚠️ Ingresa tu nombre y teléfono.');
     if (!clientName) nameInput?.focus(); else phoneInput?.focus();
+    return;
+  }
+  
+  if (deliveryType === 'delivery' && !deliveryAddress) {
+    showToast('⚠️ Ingresa tu dirección para el delivery.');
+    addressInput?.focus();
     return;
   }
 
@@ -298,7 +348,7 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientName, clientPhone, items: cart }),
+      body: JSON.stringify({ clientName, clientPhone, deliveryType, deliveryAddress, items: cart }),
     });
     if (!res.ok) throw new Error();
     const result = await res.json() as { success: boolean; orderId?: string; error?: string };
@@ -312,8 +362,15 @@ document.getElementById('whatsapp-order-btn')?.addEventListener('click', async (
         msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ''} - $${itemTotal}\n`;
       });
       const totalCount = cart.reduce((s, i) => s + i.qty, 0);
-      const totalPrice = cart.reduce((s, i) => s + ((i.price || 0) * i.qty), 0);
-      msg += `\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido, indica si es DELIVERY o RETIRO EN LOCAL y el método de pago. ¡Gracias!*`;
+      const deliveryCost = deliveryType === 'delivery' ? 5 : 0;
+      const totalPrice = cart.reduce((s, i) => s + ((i.price || 0) * i.qty), 0) + deliveryCost;
+      
+      msg += `\n*Entrega:* ${deliveryType === 'delivery' ? '🛵 Delivery (+$5)' : '🏪 Retiro en local'}`;
+      if (deliveryType === 'delivery') {
+        msg += `\n*Dirección:* ${deliveryAddress}`;
+      }
+      
+      msg += `\n\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido y el método de pago. ¡Gracias!*`;
 
       cart = []; saveCart(); updateCartCount(); renderCart();
       if (nameInput) nameInput.value = '';
