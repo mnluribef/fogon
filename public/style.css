@@ -440,11 +440,12 @@ nav {
 
 .hero-content p {
     font-size: 1.15rem;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
     margin-bottom: 2.5rem;
     max-width: 500px;
     line-height: 1.7;
-    font-weight: 300;
+    font-weight: 400;
     opacity: 0;
     animation: fadeUp 0.9s 0.5s forwards;
 }
