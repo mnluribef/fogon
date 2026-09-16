@@ -496,18 +496,20 @@ let activeCategory = 'all';
 
 const categoryNames = {
     'all': 'Todo',
-    'grill': 'Parrillas',
-    'steaks': 'Cortes Premium',
-    'burgers': 'Hamburguesas',
-    'drinks': 'Bebidas'
+    'entradas': 'Entradas',
+    'principales': 'Principales',
+    'combos': 'Combos',
+    'postres': 'Postres',
+    'bebidas': 'Bebidas'
 };
 
 const categoryIcons = {
     'all': 'layout-grid',
-    'grill': 'flame',
-    'steaks': 'beef',
-    'burgers': 'sandwich',
-    'drinks': 'cup-soda'
+    'entradas': 'salad',
+    'principales': 'utensils',
+    'combos': 'package-2',
+    'postres': 'cake',
+    'bebidas': 'cup-soda'
 };
 
 const colorMap = {
