@@ -175,7 +175,7 @@ const iconMap = {
     "Collar Delicado": "gem"
 };
 
-const addToCart = (id, name, quantity = 1, icon = 'package', options = {}) => {
+const addToCart = (id, name, price, quantity = 1, icon = 'package', options = {}) => {
     const qty = parseInt(quantity);
 
     // Crear llave única basada en id y opciones ordenadas consistentemente
@@ -191,7 +191,7 @@ const addToCart = (id, name, quantity = 1, icon = 'package', options = {}) => {
     if (existingItem) {
         existingItem.qty += qty;
     } else {
-        cart.push({ key: itemKey, name, qty: qty, icon: finalIcon, options: options });
+        cart.push({ key: itemKey, name, price: price, qty: qty, icon: finalIcon, options: options });
     }
     saveCart();
     updateCartCount();
@@ -290,7 +290,7 @@ const renderCart = () => {
     if (whatsappOrderBtn) whatsappOrderBtn.disabled = false;
     if (customerForm) customerForm.style.display = 'block';
 
-    cartItemsContainer.innerHTML = cart.map(item => {
+    let html = cart.map(item => {
         const icon = item.icon && item.icon !== 'package' ? item.icon : (iconMap[item.name] || 'package');
         
         let sizeText = "";
@@ -316,6 +316,7 @@ const renderCart = () => {
                             <h4>${item.name}</h4>
                             <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.2rem;">
                                 ${sizeText}
+                                <span style="font-weight: 600; color: var(--accent);">$${item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar'}</span>
                             </div>
                         </div>
                     </div>
@@ -331,6 +332,17 @@ const renderCart = () => {
             </div>
         `;
     }).join('');
+
+    const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0);
+
+    html += `
+        <div class="cart-total" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; margin-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;">
+            <span>Total:</span>
+            <span style="color: var(--accent);">$${totalPrice.toFixed(2)}</span>
+        </div>
+    `;
+
+    cartItemsContainer.innerHTML = html;
 
     // Diferir createIcons al siguiente frame para no bloquear el hilo principal
     requestAnimationFrame(() => lucide.createIcons());
@@ -416,6 +428,7 @@ if (whatsappOrderBtn) {
                 
                 let message = `¡Hola Fogon! 👋✨\n\nHe realizado un pedido en la web.\n*Número de Pedido:* #${orderId}\n*Cliente:* ${clientName} (${clientPhone})\n${deliveryInfoText}\n\n*Artículos del pedido:*\n`;
 
+                let totalPrice = 0;
                 cart.forEach(item => {
                     let optionsString = "";
                     if (item.options && typeof item.options === 'object') {
@@ -430,11 +443,13 @@ if (whatsappOrderBtn) {
                             optionsString = " [" + entries.map(([k, v]) => `${labels[k] || k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join(', ') + "]";
                         }
                     }
-                    message += `✅ ${item.qty}x ${item.name}${optionsString}\n`;
+                    const itemTotal = (item.price || 0) * item.qty;
+                    totalPrice += itemTotal;
+                    message += `✅ ${item.qty}x ${item.name}${optionsString} - ${item.price > 0 ? '$' + itemTotal.toFixed(2) : 'A consultar'}\n`;
                 });
 
                 const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-                message += `\n*Total de artículos:* ${totalItems}\n\n📦 *Por favor confirmen disponibilidad y coordinen el envío. ¡Gracias!*`;
+                message += `\n*Total de artículos:* ${totalItems}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n📦 *Por favor confirmen disponibilidad y coordinen el envío. ¡Gracias!*`;
 
                 // Vaciar carrito local
                 cart = [];
@@ -646,6 +661,7 @@ const renderProducts = (products) => {
                         <button class="cta-btn product-cta add-to-cart" 
                             data-id="${p.id}"
                             data-name="${p.name}" 
+                            data-price="${p.price}"
                             data-input="qty-${p.id}" 
                             data-icon="${p.icon || 'package'}">Agregar</button>
                     </div>
@@ -722,6 +738,7 @@ const initCatalogDelegation = () => {
         if (addBtn) {
             const productId = addBtn.getAttribute('data-id');
             const productName = addBtn.getAttribute('data-name');
+            const productPrice = parseFloat(addBtn.getAttribute('data-price')) || 0;
             const inputId = addBtn.getAttribute('data-input');
             const iconName = addBtn.getAttribute('data-icon');
             const input = document.getElementById(inputId);
@@ -743,7 +760,7 @@ const initCatalogDelegation = () => {
                 });
             }
 
-            addToCart(productId, productName, quantity, iconName, options);
+            addToCart(productId, productName, productPrice, quantity, iconName, options);
 
             // Resetear cantidad a 1
             if (input) input.value = 1;
