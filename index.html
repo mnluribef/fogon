@@ -431,7 +431,7 @@
                 <i data-lucide="user" style="width: 16px; height: 16px; color: var(--accent);"></i>
                 Datos de Contacto
             </h4>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
                 <div style="flex: 1; min-width: 200px;">
                     <label for="client-name"
                         style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Nombre
@@ -445,6 +445,36 @@
                         / WhatsApp</label>
                     <input type="tel" id="client-phone" placeholder="Ej. +58 412-4756191"
                         style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+                </div>
+            </div>
+
+            <h4 style="margin-bottom: 0.75rem; margin-top: 1.5rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+                <i data-lucide="truck" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                Método de Entrega
+            </h4>
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                    <input type="radio" name="delivery-type" value="delivery" checked style="accent-color: var(--primary);">
+                    Delivery
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                    <input type="radio" name="delivery-type" value="retiro" style="accent-color: var(--primary);">
+                    Retiro en Tienda
+                </label>
+            </div>
+
+            <div id="delivery-fields-container" style="display: block;">
+                <div style="margin-bottom: 1rem;">
+                    <label for="delivery-address"
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Dirección de Entrega</label>
+                    <textarea id="delivery-address" placeholder="Ej. Calle 1, Edificio X, Piso 2, Apartamento Y"
+                        style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s; min-height: 60px; resize: vertical;"></textarea>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                    <label for="delivery-notes"
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Notas Adicionales (Opcional)</label>
+                    <textarea id="delivery-notes" placeholder="Ej. Dejar en garita, llamar al llegar..."
+                        style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s; min-height: 50px; resize: vertical;"></textarea>
                 </div>
             </div>
         </div>

@@ -68,10 +68,17 @@ export async function onRequestPost(context) {
 
     try {
         const data = await request.json();
-        const { clientName, clientPhone, items } = data;
+        const { clientName, clientPhone, deliveryType = 'delivery', deliveryAddress = '', deliveryNotes = '', items } = data;
 
         if (!clientName || !clientPhone || !items || !Array.isArray(items) || items.length === 0) {
             return new Response(JSON.stringify({ error: "Datos del pedido incompletos o inválidos." }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+        
+        if (deliveryType === 'delivery' && !deliveryAddress.trim()) {
+            return new Response(JSON.stringify({ error: "La dirección es requerida para el delivery." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
@@ -109,12 +116,15 @@ export async function onRequestPost(context) {
         // 1. Sentencia para insertar el Pedido
         statements.push(
             db.prepare(
-                "INSERT INTO orders (id, client_name, client_phone, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?)"
+                "INSERT INTO orders (id, client_name, client_phone, delivery_type, delivery_address, delivery_notes, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(
                 orderId,
                 clientName.trim(),
                 clientPhone.trim(),
+                deliveryType,
+                deliveryAddress.trim(),
+                deliveryNotes.trim(),
                 "pendiente",
                 totalItems, // Se actualizará al final
                 totalPrice // Se actualizará al final

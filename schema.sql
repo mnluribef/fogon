@@ -55,6 +55,9 @@ CREATE TABLE IF NOT EXISTS orders (
     id TEXT PRIMARY KEY, -- ID único del pedido (ej: SUB-XXXX)
     client_name TEXT NOT NULL,
     client_phone TEXT NOT NULL,
+    delivery_type TEXT NOT NULL DEFAULT 'delivery', -- 'delivery' o 'retiro'
+    delivery_address TEXT,
+    delivery_notes TEXT,
     status TEXT NOT NULL DEFAULT 'pendiente', -- pendiente, en_produccion, listo_entrega, completado, cancelado
     total_items INTEGER NOT NULL DEFAULT 0,
     total_price REAL NOT NULL DEFAULT 0.0,

@@ -532,6 +532,33 @@ async function viewOrderDetails(orderId) {
             totalElement.textContent = totalText;
         }
 
+        // Información de Delivery
+        const deliveryTypeElem = document.getElementById('modal-delivery-type');
+        const deliveryAddressContainer = document.getElementById('modal-delivery-address-container');
+        const deliveryAddressElem = document.getElementById('modal-delivery-address');
+        const deliveryNotesContainer = document.getElementById('modal-delivery-notes-container');
+        const deliveryNotesElem = document.getElementById('modal-delivery-notes');
+
+        if (deliveryTypeElem) {
+            const isDelivery = order.delivery_type === 'delivery';
+            deliveryTypeElem.textContent = isDelivery ? 'Delivery a Domicilio' : 'Retiro en Tienda';
+            
+            if (isDelivery) {
+                if (deliveryAddressContainer) deliveryAddressContainer.style.display = 'block';
+                if (deliveryAddressElem) deliveryAddressElem.textContent = order.delivery_address || 'No especificada';
+                
+                if (order.delivery_notes) {
+                    if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'block';
+                    if (deliveryNotesElem) deliveryNotesElem.textContent = order.delivery_notes;
+                } else {
+                    if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'none';
+                }
+            } else {
+                if (deliveryAddressContainer) deliveryAddressContainer.style.display = 'none';
+                if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'none';
+            }
+        }
+
         // Items del pedido
         const itemsList = document.getElementById('modal-items-list');
         if (itemsList) {

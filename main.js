@@ -336,19 +336,47 @@ const renderCart = () => {
     requestAnimationFrame(() => lucide.createIcons());
 };
 
+// Delivery type toggle logic
+const deliveryTypeRadios = document.querySelectorAll('input[name="delivery-type"]');
+const deliveryFieldsContainer = document.getElementById('delivery-fields-container');
+
+if (deliveryTypeRadios.length > 0 && deliveryFieldsContainer) {
+    deliveryTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'delivery') {
+                deliveryFieldsContainer.style.display = 'block';
+            } else {
+                deliveryFieldsContainer.style.display = 'none';
+            }
+        });
+    });
+}
+
 // Send Order to Backend and redirect to WhatsApp
 if (whatsappOrderBtn) {
     whatsappOrderBtn.addEventListener('click', async () => {
         const clientNameInput = document.getElementById('client-name');
         const clientPhoneInput = document.getElementById('client-phone');
+        const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked');
+        const deliveryAddressInput = document.getElementById('delivery-address');
+        const deliveryNotesInput = document.getElementById('delivery-notes');
         
         const clientName = clientNameInput ? clientNameInput.value.trim() : "";
         const clientPhone = clientPhoneInput ? clientPhoneInput.value.trim() : "";
+        const deliveryType = deliveryTypeInput ? deliveryTypeInput.value : "delivery";
+        const deliveryAddress = deliveryAddressInput ? deliveryAddressInput.value.trim() : "";
+        const deliveryNotes = deliveryNotesInput ? deliveryNotesInput.value.trim() : "";
 
         if (!clientName || !clientPhone) {
             showToast('⚠️ Ingresa tu nombre y teléfono.');
             if (!clientName && clientNameInput) clientNameInput.focus();
             else if (!clientPhone && clientPhoneInput) clientPhoneInput.focus();
+            return;
+        }
+
+        if (deliveryType === 'delivery' && !deliveryAddress) {
+            showToast('⚠️ Ingresa tu dirección de entrega.');
+            if (deliveryAddressInput) deliveryAddressInput.focus();
             return;
         }
 
@@ -367,6 +395,9 @@ if (whatsappOrderBtn) {
                 body: JSON.stringify({
                     clientName,
                     clientPhone,
+                    deliveryType,
+                    deliveryAddress,
+                    deliveryNotes,
                     items: cart
                 })
             });
@@ -378,7 +409,12 @@ if (whatsappOrderBtn) {
             if (result.success) {
                 const orderId = result.orderId;
                 const phoneNumber = CONFIG.WHATSAPP_NUMBER;
-                let message = `¡Hola Fogon! 👋✨\n\nHe realizado un pedido en la web.\n*Número de Pedido:* #${orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Artículos del pedido:*\n`;
+                
+                let deliveryInfoText = deliveryType === 'retiro' 
+                    ? `*Método:* Retiro en Tienda`
+                    : `*Método:* Delivery\n*Dirección:* ${deliveryAddress}${deliveryNotes ? `\n*Notas:* ${deliveryNotes}` : ''}`;
+                
+                let message = `¡Hola Fogon! 👋✨\n\nHe realizado un pedido en la web.\n*Número de Pedido:* #${orderId}\n*Cliente:* ${clientName} (${clientPhone})\n${deliveryInfoText}\n\n*Artículos del pedido:*\n`;
 
                 cart.forEach(item => {
                     let optionsString = "";
@@ -409,6 +445,12 @@ if (whatsappOrderBtn) {
                 // Limpiar campos de texto
                 if (clientNameInput) clientNameInput.value = "";
                 if (clientPhoneInput) clientPhoneInput.value = "";
+                if (deliveryAddressInput) deliveryAddressInput.value = "";
+                if (deliveryNotesInput) deliveryNotesInput.value = "";
+                if (deliveryTypeRadios.length > 0) {
+                    deliveryTypeRadios[0].checked = true; // Volver a delivery por defecto
+                    if (deliveryFieldsContainer) deliveryFieldsContainer.style.display = 'block';
+                }
 
                 // Cerrar drawer
                 toggleCart();
