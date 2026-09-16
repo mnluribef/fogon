@@ -637,6 +637,8 @@ section { padding: 5rem 0; }
     transition: transform 0.4s var(--ease-bounce), box-shadow 0.4s var(--ease-smooth);
     border: 1px solid rgba(201, 116, 138, 0.08);
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card::after {
@@ -706,6 +708,9 @@ section { padding: 5rem 0; }
 
 .product-info {
     padding: 1.8rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .product-header {
@@ -843,7 +848,8 @@ section { padding: 5rem 0; }
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    margin-top: 1.2rem;
+    margin-top: auto;
+    padding-top: 1.2rem;
 }
 
 .main-qty-selector {
