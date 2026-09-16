@@ -1383,19 +1383,20 @@ a.footer-contact-link:hover {
 
 #cart-count {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    background: var(--gold);
-    color: var(--text-heading);
-    font-size: 0.72rem;
+    top: -6px;
+    right: -6px;
+    background: var(--rose-dark);
+    color: var(--white);
+    font-size: 0.9rem;
     font-weight: 700;
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid var(--white);
+    box-shadow: var(--shadow-soft);
 }
 
 /* ===================== CART DRAWER ===================== */
