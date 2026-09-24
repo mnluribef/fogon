@@ -611,12 +611,12 @@
 
     const CONFIG = { WHATSAPP_NUMBER: "584124756191", DEFAULT_CURRENCY: "$" };
 
-    let currentBcvRate = 36.50;
+    let currentBcvRate = 853.50;
     let uploadedReceiptBase64: string | null = null;
     let receiptFileInput: HTMLInputElement | null = null;
 
     // Compresión de imagen cliente para optimizar carga sobre redes móviles
-    const compressImageFile = (file: File): Promise<string> => {
+    function compressImageFile(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -654,7 +654,7 @@
     };
 
     // Consulta de la tasa oficial del día
-    const fetchBcvRate = async () => {
+    async function fetchBcvRate() {
         try {
             const res = await fetch("/api/bcv");
             if (res.ok) {
@@ -1587,10 +1587,16 @@
     });
 
     // Inicialización
-    window.addEventListener("load", () => {
+    const initApp = () => {
         initReveal();
         fetchBcvRate();
         fetchCatalog();
         updateCartCount();
-    });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+        initApp();
+    }
 </script>

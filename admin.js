@@ -5,7 +5,7 @@ let currentAdmin = null;
 let ordersList = [];
 let productsList = [];
 let salesList = [];
-let currentBcvRate = 36.50;
+let currentBcvRate = 853.50;
 let currentBcvAuto = true;
 
 // Elementos del DOM
@@ -348,7 +348,7 @@ async function loadBcvRate() {
         const res = await fetch('/api/bcv');
         if (res.ok) {
             const data = await res.json();
-            currentBcvRate = parseFloat(data.rate) || 36.50;
+            currentBcvRate = parseFloat(data.rate) || 853.50;
             currentBcvAuto = data.autoUpdate !== false;
             const display = document.getElementById('admin-bcv-val');
             if (display) display.textContent = `${currentBcvRate.toFixed(2)} Bs.`;

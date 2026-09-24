@@ -1,7 +1,8 @@
 -- Esquema de Base de Datos - FOGÓN Restaurante Venezolano
 
 -- Tabla de Tipos de Producto (Categorías del menú)
-CREATE TABLE IF NOT EXISTS product_types (\n    id TEXT PRIMARY KEY, -- 'entradas', 'principales', 'combos', 'postres', 'bebidas'
+CREATE TABLE IF NOT EXISTS product_types (
+    id TEXT PRIMARY KEY, -- 'entradas', 'principales', 'combos', 'postres', 'bebidas'
     name TEXT NOT NULL,
     description TEXT,
     icon TEXT DEFAULT 'package',
@@ -130,9 +131,9 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 -- Configuraciones Iniciales
 INSERT OR IGNORE INTO settings (key, value) VALUES 
-('bcv_rate', '36.50'),
+('bcv_rate', '853.50'),
 ('bcv_auto_update', '1'),
-('bcv_updated_at', CURRENT_TIMESTAMP);
+('bcv_updated_at', '1970-01-01 00:00:00');
 
 -- Categorías
 INSERT OR IGNORE INTO product_types (id, name, description, icon) VALUES

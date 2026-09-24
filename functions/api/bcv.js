@@ -1,7 +1,7 @@
 // Controlador de Tasa Oficial BCV - FOGÓN Restaurante
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
-const DEFAULT_FALLBACK_RATE = 36.50;
+const DEFAULT_FALLBACK_RATE = 853.50;
 const EXTERNAL_API_URL = "https://ve.dolarapi.com/v1/dolares/oficial";
 
 /**
@@ -10,18 +10,13 @@ const EXTERNAL_API_URL = "https://ve.dolarapi.com/v1/dolares/oficial";
 async function ensureSettingsTable(db) {
     try {
         await db.prepare(`
-            CREATE TABLE IF NOT EXISTS settings (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `).run();
+            CREATE TABLE IF NOT EXISTS settings (\n                key TEXT PRIMARY KEY,\n                value TEXT NOT NULL,\n                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP\n            )\n        `).run();
 
         await db.prepare(`
             INSERT OR IGNORE INTO settings (key, value) VALUES 
-            ('bcv_rate', '36.50'),
+            ('bcv_rate', '853.50'),
             ('bcv_auto_update', '1'),
-            ('bcv_updated_at', CURRENT_TIMESTAMP)
+            ('bcv_updated_at', '1970-01-01T00:00:00Z')
         `).run();
     } catch (e) {
         // Ignorar si ya existe
@@ -33,12 +28,15 @@ async function ensureSettingsTable(db) {
  * Retorna tasa actual (cacheada o en vivo) en formato JSON
  */
 export async function onRequestGet(context) {
-    const { env } = context;
+    const { env, request } = context;
     const db = env.DB || env.fogon;
 
     await ensureSettingsTable(db);
 
     try {
+        const url = new URL(request.url);
+        const forceFetch = url.searchParams.get("force") === "true";
+
         // Leer configuración actual de la base de datos
         const { results: rows } = await db.prepare("SELECT key, value FROM settings WHERE key LIKE 'bcv_%'").all();
         const settings = {};
@@ -51,18 +49,22 @@ export async function onRequestGet(context) {
         let lastUpdated = settings.bcv_updated_at || new Date().toISOString();
         let source = autoUpdate ? 'cached' : 'manual';
 
-        // Si auto_update está activo, verificar si han pasado más de 2 horas desde la última actualización
+        // Si auto_update está activo: actualizar si pasaron más de 30 minutos, o si la tasa es el valor inicial viejo (<= 50), o si se pide force=true
         const lastUpdatedMs = new Date(lastUpdated).getTime();
         const nowMs = Date.now();
-        const twoHoursMs = 2 * 60 * 60 * 1000;
+        const isOutdated = isNaN(lastUpdatedMs) || (nowMs - lastUpdatedMs > 30 * 60 * 1000);
+        const isOldSeed = currentRate <= 50;
 
-        if (autoUpdate && (isNaN(lastUpdatedMs) || nowMs - lastUpdatedMs > twoHoursMs)) {
+        if (autoUpdate && (forceFetch || isOldSeed || isOutdated)) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
 
                 const res = await fetch(EXTERNAL_API_URL, {
-                    headers: { 'Accept': 'application/json' },
+                    headers: { 
+                        'Accept': 'application/json',
+                        'User-Agent': 'FogonRestaurante/1.0'
+                    },
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
@@ -72,7 +74,7 @@ export async function onRequestGet(context) {
                     const fetchedRate = parseFloat(data.promedio || data.price || 0);
 
                     if (fetchedRate > 0) {
-                        currentRate = fetchedRate;
+                        currentRate = Math.round(fetchedRate * 100) / 100;
                         lastUpdated = data.fechaActualizacion || new Date().toISOString();
                         source = 'bcv_api';
 
@@ -95,7 +97,7 @@ export async function onRequestGet(context) {
         }), {
             headers: {
                 "Content-Type": "application/json",
-                "Cache-Control": "public, max-age=60"
+                "Cache-Control": "no-cache"
             }
         });
     } catch (err) {
@@ -149,15 +151,13 @@ export async function onRequestPut(context) {
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Tasa BCV configurada exitosamente.",
-            rate: rate !== undefined ? parseFloat(rate) : undefined,
-            autoUpdate
+            message: "Configuración de tasa BCV actualizada exitosamente."
         }), {
             headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
         console.error("Error en PUT /api/bcv:", err);
-        return new Response(JSON.stringify({ error: "Error al actualizar tasa BCV." }), {
+        return new Response(JSON.stringify({ error: "Error al actualizar configuración BCV." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
