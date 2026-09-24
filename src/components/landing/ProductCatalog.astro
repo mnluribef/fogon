@@ -611,6 +611,66 @@
 
     const CONFIG = { WHATSAPP_NUMBER: "584124756191", DEFAULT_CURRENCY: "$" };
 
+    let currentBcvRate = 36.50;
+    let uploadedReceiptBase64: string | null = null;
+    let receiptFileInput: HTMLInputElement | null = null;
+
+    // Compresión de imagen cliente para optimizar carga sobre redes móviles
+    const compressImageFile = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const MAX_DIM = 1200;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > MAX_DIM) {
+                            height = Math.round((height * MAX_DIM) / width);
+                            width = MAX_DIM;
+                        }
+                    } else {
+                        if (height > MAX_DIM) {
+                            width = Math.round((width * MAX_DIM) / height);
+                            height = MAX_DIM;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) return resolve(img.src);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+                    resolve(dataUrl);
+                };
+                img.onerror = () => reject(new Error("Error al procesar la imagen"));
+            };
+            reader.onerror = () => reject(new Error("Error al leer el archivo"));
+        });
+    };
+
+    // Consulta de la tasa oficial del día
+    const fetchBcvRate = async () => {
+        try {
+            const res = await fetch("/api/bcv");
+            if (res.ok) {
+                const data = (await res.json()) as { rate?: number | string };
+                if (data.rate && parseFloat(String(data.rate)) > 0) {
+                    currentBcvRate = parseFloat(String(data.rate));
+                    document.querySelectorAll(".bcv-rate-text").forEach((el) => {
+                        el.textContent = currentBcvRate.toFixed(2);
+                    });
+                    if (catalogProducts.length > 0) renderProducts(catalogProducts);
+                    renderCart();
+                }
+            }
+        } catch (e) {}
+    };
+
     // --- SCROLL REVEAL ---
     const initReveal = () => {
         const reveals = document.querySelectorAll<HTMLElement>(".reveal");
@@ -971,9 +1031,7 @@
                 }
 
                 // Punto de Venta es solo para retiro
-                const paymentSelect = document.getElementById(
-                    "payment-method",
-                ) as HTMLSelectElement;
+                const paymentSelect = (document.getElementById("payment-method") as any);
                 if (
                     paymentSelect &&
                     (e.target as HTMLInputElement).value === "delivery" &&
@@ -1018,6 +1076,48 @@
                         : "none";
         });
 
+    // --- RECEIPT DROPZONE LISTENERS ---
+    const dropzone = document.getElementById("receipt-dropzone");
+    receiptFileInput = document.getElementById("payment-receipt-file") as any;
+
+    dropzone?.addEventListener("click", (e) => {
+        if ((e.target as HTMLElement).id === "btn-remove-receipt") return;
+        receiptFileInput?.click();
+    });
+
+    receiptFileInput?.addEventListener("change", async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        try {
+            showToast("📷 Procesando comprobante...");
+            uploadedReceiptBase64 = await compressImageFile(file);
+            const previewBox = document.getElementById("receipt-preview-box");
+            const promptBox = document.getElementById("receipt-prompt");
+            const previewImg = document.getElementById("receipt-preview-img") as any;
+            const previewName = document.getElementById("receipt-preview-name");
+
+            if (previewImg) previewImg.src = uploadedReceiptBase64;
+            if (previewName) previewName.textContent = file.name;
+            if (promptBox) promptBox.style.display = "none";
+            if (previewBox) previewBox.style.display = "flex";
+            showToast("✅ Comprobante adjuntado correctamente");
+        } catch (err) {
+            showToast("❌ No se pudo procesar la imagen del comprobante.");
+        }
+    });
+
+    document.getElementById("btn-remove-receipt")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        uploadedReceiptBase64 = null;
+        if (receiptFileInput) receiptFileInput.value = "";
+        const previewBox = document.getElementById("receipt-preview-box");
+        const promptBox = document.getElementById("receipt-prompt");
+        if (promptBox) promptBox.style.display = "block";
+        if (previewBox) previewBox.style.display = "none";
+        showToast("Comprobante removido");
+    });
+
     // --- WHATSAPP ORDER ---
     document
         .getElementById("whatsapp-order-btn")
@@ -1040,9 +1140,7 @@
             ) as HTMLInputElement;
             const deliveryAddress = addressInput?.value.trim() || "";
 
-            const paymentSelect = document.getElementById(
-                "payment-method",
-            ) as HTMLSelectElement;
+            const paymentSelect = (document.getElementById("payment-method") as any);
             const paymentMethod = paymentSelect?.value || "";
             const paymentRefInput = document.getElementById(
                 "payment-reference",
@@ -1125,6 +1223,7 @@
                     cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0) +
                     deliveryCost;
 
+                msg += `\n*Total Platillos:* ${totalCount}`;
                 msg += `\n*Entrega:* ${deliveryType === "delivery" ? "🛵 Delivery (+$5)" : "🏪 Retiro en local"}`;
                 if (deliveryType === "delivery") {
                     msg += `\n*Dirección:* ${deliveryAddress}`;

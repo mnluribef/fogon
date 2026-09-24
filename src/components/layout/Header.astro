@@ -139,11 +139,13 @@
         try {
             const res = await fetch("/api/bcv");
             if (res.ok) {
-                const data = await res.json();
+                const data = (await res.json()) as { rate?: number | string };
                 const badge = document.getElementById("nav-bcv-badge");
                 const rateSpan = document.getElementById("nav-bcv-rate");
                 if (badge && rateSpan && data.rate) {
-                    rateSpan.textContent = parseFloat(data.rate).toFixed(2);
+                    rateSpan.textContent = parseFloat(
+                        String(data.rate),
+                    ).toFixed(2);
                     badge.style.display = "inline-flex";
                 }
             }
