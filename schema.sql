@@ -1,8 +1,7 @@
 -- Esquema de Base de Datos - FOGÓN Restaurante Venezolano
 
--- Tabla de Tipos de Producto (Ramas de productos)
-CREATE TABLE IF NOT EXISTS product_types (
-    id TEXT PRIMARY KEY, -- 'apparel', 'mug', 'sticker', 'accessory', etc.
+-- Tabla de Tipos de Producto (Categorías del menú)
+CREATE TABLE IF NOT EXISTS product_types (\n    id TEXT PRIMARY KEY, -- 'entradas', 'principales', 'combos', 'postres', 'bebidas'
     name TEXT NOT NULL,
     description TEXT,
     icon TEXT DEFAULT 'package',
@@ -18,8 +17,8 @@ CREATE TABLE IF NOT EXISTS products (
     category TEXT,
     icon TEXT,
     image_url TEXT,
-    sizes TEXT, -- Tallas separadas por comas (para compatibilidad)
-    type_id TEXT REFERENCES product_types(id), -- Rama asociada
+    sizes TEXT, -- Opciones secundarias separadas por comas
+    type_id TEXT REFERENCES product_types(id),
     active INTEGER NOT NULL DEFAULT 1, -- 1 = Activo, 0 = Inactivo
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -29,11 +28,11 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS product_attributes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id TEXT NOT NULL,
-    attr_key TEXT NOT NULL,       -- Ej: 'color', 'finish', 'capacity'
-    attr_label TEXT NOT NULL,     -- Ej: 'Color', 'Acabado', 'Capacidad'
-    attr_values TEXT NOT NULL,    -- JSON array de valores válidos: ["Blanco","Negro"]
+    attr_key TEXT NOT NULL,       -- Ej: 'proteina', 'punto', 'tamaño'
+    attr_label TEXT NOT NULL,     -- Ej: 'Proteína', 'Punto de Cocción'
+    attr_values TEXT NOT NULL,    -- JSON array: ["Res","Pollo"]
     attr_type TEXT DEFAULT 'select', -- 'select', 'color_swatch', 'toggle'
-    price_matrix TEXT DEFAULT '{}',  -- JSON object con deltas de precio: {"XL": 1.5, "XXL": 2.0}
+    price_matrix TEXT DEFAULT '{}',  -- JSON object con deltas de precio
     required INTEGER DEFAULT 0,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
@@ -43,7 +42,7 @@ CREATE TABLE IF NOT EXISTS product_variants (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id TEXT NOT NULL,
     sku TEXT,
-    label TEXT NOT NULL,          -- Ej: 'Talla M, Color Rojo' o 'Mate, 11oz'
+    label TEXT NOT NULL,          -- Ej: 'Familiar, 4 personas'
     price_delta REAL DEFAULT 0.0,
     stock INTEGER DEFAULT -1,     -- -1 = Ilimitado
     active INTEGER DEFAULT 1,
@@ -52,12 +51,17 @@ CREATE TABLE IF NOT EXISTS product_variants (
 
 -- Tabla de Pedidos
 CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY, -- ID único del pedido (ej: SUB-XXXX)
+    id TEXT PRIMARY KEY, -- ID único del pedido (ej: FOG-XXXX)
     client_name TEXT NOT NULL,
     client_phone TEXT NOT NULL,
     delivery_type TEXT NOT NULL DEFAULT 'delivery', -- 'delivery' o 'retiro'
     delivery_address TEXT,
     delivery_notes TEXT,
+    payment_method TEXT,
+    payment_reference TEXT,
+    payment_receipt TEXT, -- Imagen del comprobante (Base64 o URL segura)
+    bcv_rate REAL DEFAULT 0.0, -- Tasa oficial BCV al momento del pedido
+    total_bs REAL DEFAULT 0.0, -- Monto equivalente en Bolívares
     status TEXT NOT NULL DEFAULT 'pendiente', -- pendiente, en_produccion, listo_entrega, completado, cancelado
     total_items INTEGER NOT NULL DEFAULT 0,
     total_price REAL NOT NULL DEFAULT 0.0,
@@ -71,7 +75,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     order_id TEXT NOT NULL,
     product_id TEXT NOT NULL,
     product_name TEXT NOT NULL,
-    size TEXT, -- Talla o variante seleccionada (opcional)
+    size TEXT, -- Opción seleccionada (ej: Término, Bebida, etc.)
     quantity INTEGER NOT NULL,
     unit_price REAL NOT NULL DEFAULT 0.0, -- Precio al momento de la compra
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
@@ -104,6 +108,13 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at INTEGER NOT NULL -- Timestamp Unix de expiración
 );
 
+-- Tabla de Configuraciones del Sistema (Tasa BCV, switches del negocio)
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- --- ÍNDICES PARA OPTIMIZACIÓN DE BÚSQUEDAS ---
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
 CREATE INDEX IF NOT EXISTS idx_products_type ON products(type_id);
@@ -117,54 +128,32 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 -- --- PRECARGA DE DATOS ---
 
--- Insertar tipos de productos (categorías del menú)
-INSERT OR REPLACE INTO product_types (id, name, description, icon, attributes) VALUES
-('entradas',    'Entradas',          'Piqueos y entradas del menú FOGÓN',         'salad',     '[{"key":"cantidad","label":"Cantidad","type":"select","values":["Porción personal","Porción doble"]}]'),
-('principales', 'Platos Principales','Platos fuertes con sabrosa sazón venezolana', 'utensils',  '[{"key":"proteina","label":"Proteína","type":"select","values":["Res","Pollo","Cerdo","Mixto"]},{"key":"punto","label":"Punto de Coccción","type":"select","values":["Vuelta y Vuelta","Tres Cuartos","Bien Cocido"]}]'),
-('combos',      'Combos',            'Combos familiares y promociones del día',     'package-2', '[{"key":"size","label":"Tamaño","type":"select","values":["Para 2","Familiar (4 pers)","Mega (6 pers)"]}]'),
-('postres',     'Postres',           'Postres artesanales y dulces venezolanos',    'cake',      '[]'),
-('bebidas',     'Bebidas',           'Jugos naturales, refrescos y bebidas frías',  'cup-soda',  '[{"key":"tamaño","label":"Tamaño","type":"select","values":["Vaso 12oz","Vaso 16oz","Litro"]}]');
+-- Configuraciones Iniciales
+INSERT OR IGNORE INTO settings (key, value) VALUES 
+('bcv_rate', '36.50'),
+('bcv_auto_update', '1'),
+('bcv_updated_at', CURRENT_TIMESTAMP);
 
--- Insertar platillos del menú de FOGÓN
-INSERT OR REPLACE INTO products (id, name, description, price, category, icon, image_url, sizes, type_id, active) VALUES
--- Entradas
-('tequenos-queso',    'Tequeños con Guasacaca',      'Masa de tequeño crocante rellena de queso blanco derretido. Acompañados de nuestra guasacaca artesanal. Porción de 8 unidades.',  8.0,  'entradas',    'salad',    'assets/product_tequenos.webp',    NULL, 'entradas',    1),
-('empanadas-mechada', 'Empanadas de Carne Mechada',  'Empanadas de maíz fritas con relleno de jugosa carne mechada criolla. Crujientes por fuera, tiernas por dentro. Porción de 3 unidades.', 7.0,  'entradas',    'salad',    'assets/product_empanadas.webp',   NULL, 'entradas',    1),
--- Platos Principales
-('pabellon-criollo',  'Pabellón Criollo',            'El plato insignia venezolano. Carne mechada sazonada al sofrito, caraotas negras cremosas, arroz blanco y tajadas de plátano maduro frito. 100% casero.',  14.0, 'principales', 'utensils', 'assets/product_pabellon.webp',    NULL, 'principales', 1),
-('pollo-plancha',     'Pollo a la Plancha',           'Jugosa pechuga de pollo a la plancha con especias criollas y marca de parrilla perfecta. Servida con arroz, ensalada y tostones.',  12.0, 'principales', 'utensils', 'assets/product_pollo_plancha.webp', NULL, 'principales', 1),
-('churrasco-fogon',   'Churrasco al Fogón',          'Corte de res selecto a la parrilla con marca de fuego y jugosidad interna. Servido en tabla de madera con chimichurri casero y yuca frita.',  18.0, 'principales', 'utensils', 'assets/product_churrasco.webp',   NULL, 'principales', 1),
--- Combos
-('combo-familiar',    'Combo Familiar FOGÓN',        'El favorito de las familias. Incluye pabellón criollo para 4 personas, arepas, ensalada familiar, caraotas y tajadas. ¡Ideal para compartir!',  45.0, 'combos',      'package-2','assets/product_combo_familiar.webp', NULL, 'combos',      1),
--- Postres
-('quesillo-casero',   'Quesillo Casero',              'Flan venezolano tradicional de textura sedosa, bañado en caramelo dorado hecho en casa. La receta de la abuela de siempre.',  5.0,  'postres',     'cake',     'assets/product_quesillo.webp',    NULL, 'postres',     1),
-('tres-leches',       'Torta Tres Leches',            'Bizcocho esponjoso empapado en mezcla de tres leches, cubierto de crema chantilly y una cereza. El postre que enamora.',  6.0,  'postres',     'cake',     'assets/product_tres_leches.webp', NULL, 'postres',     1),
--- Bebidas
-('jugo-natural',      'Jugo Natural del Día',         'Jugo fresco preparado al momento con frutas tropicales de temporada: maracuyá, tamarindo, parchíta, mango o guayaba. Selecciona tu favorita.',  3.5,  'bebidas',     'cup-soda', 'assets/product_bebidas.webp',     NULL, 'bebidas',     1),
--- Más Entradas
-('mandocas-queso',    'Mandocas con Queso',          'Anillos fritos de masa de maíz con plátano maduro, panela y especias, coronadas con queso blanco rallado. Porción de 5 unidades.', 6.0,  'entradas',    'salad',    'assets/product_mandocas.webp', NULL, 'entradas', 1),
-('arepitas-nata',     'Mini Arepitas con Nata',      'Arepitas fritas abombadas y crujientes, acompañadas de fresca nata criolla para untar. Porción de 10 unidades.', 5.5,  'entradas',    'salad',    'assets/product_arepitas.webp', NULL, 'entradas', 1),
-('patacones-carne',   'Patacones de Carne',          'Tostones de plátano verde crujiente cubiertos de carne mechada, queso rallado, lechuga y salsa rosada. Porción de 2 unidades.', 9.0,  'entradas',    'salad',    'assets/product_patacones.webp', NULL, 'entradas', 1),
-('tostones-playeros', 'Tostones Playeros',           'Rodajas gruesas de plátano verde frito, coronados con ensalada rallada, queso blanco y salsas típicas.', 7.0,  'entradas',    'salad',    'assets/product_tostones_playeros.webp', NULL, 'entradas', 1),
--- Más Principales
-('asado-negro',       'Asado Negro Caraqueño',       'Corte de muchacho redondo cocido a fuego lento en una rica salsa de papelón oscuro y vino. Servido con puré y arroz.', 16.0, 'principales', 'utensils', 'assets/product_asado_negro.webp', NULL, 'principales', 1),
-('sopa-res',          'Sopa de Res Cruzado',         'Potente caldo de costilla de res con verduras surtidas (yuca, ñame, ocumo, auyama) y un toque de cilantro fresco.', 10.0, 'principales', 'utensils', 'assets/product_sopa_res.webp', NULL, 'principales', 1),
-('cachapa-queso',     'Cachapa con Queso de Mano',   'Tortilla gruesa y dulce de maíz tierno, rellena generosamente de queso de mano derretido, bañada en mantequilla.', 11.0, 'principales', 'utensils', 'assets/product_cachapa.webp', NULL, 'principales', 1),
-('arepa-reina',       'Arepa Reina Pepiada',         'Nuestra famosa arepa asada rellena de una cremosa mezcla de pollo desmechado, aguacate y mayonesa. Un clásico.', 8.5, 'principales', 'utensils', 'assets/product_arepa_reina.webp', NULL, 'principales', 1),
-('arepa-pelua',       'Arepa Pelúa',                 'Arepa asada rellena de jugosa carne mechada y abundante queso amarillo rallado.', 8.5, 'principales', 'utensils', 'assets/product_arepa_pelua.webp', NULL, 'principales', 1),
-('hervido-gallina',   'Hervido de Gallina',          'Consomé tradicional de gallina con verduras enteras. Ideal para recargar energías, servido con arepitas.', 10.0, 'principales', 'utensils', 'assets/product_hervido_gallina.webp', NULL, 'principales', 1),
--- Más Combos
-('combo-pareja',      'Combo Enamorados',            'Para dos: 1 Parrilla mixta mediana, 2 raciones de tequeños y 2 bebidas a elección.', 28.0, 'combos', 'package-2', 'assets/product_combo_pareja.webp', NULL, 'combos', 1),
-('combo-arepero',     'Mega Combo Arepero',          'Degustación de 4 arepas (Reina, Pelúa, Dominó, Sifrina) con una ración de nata extra y 4 bebidas.', 35.0, 'combos', 'package-2', 'assets/product_combo_arepero.webp', NULL, 'combos', 1),
--- Más Postres
-('marquesa-choco',    'Marquesa de Chocolate',       'Postre frío de capas de galleta María intercaladas con una suave y rica crema de chocolate.', 5.5, 'postres', 'cake', 'assets/product_marquesa_choco.webp', NULL, 'postres', 1),
-('golfeados',         'Golfeados con Queso',         'Panecillos dulces enrollados con papelón, anís y queso, coronados con un generoso trozo de queso de mano.', 4.5, 'postres', 'cake', 'assets/product_golfeados.webp', NULL, 'postres', 1),
--- Más Bebidas
-('papelon-limon',     'Papelón con Limón',           'Refrescante bebida tradicional de panela (papelón) con el toque perfecto de acidez del limón criollo.', 2.5, 'bebidas', 'cup-soda', 'assets/product_papelon_limon.webp', NULL, 'bebidas', 1),
-('chicha-venezolana', 'Chicha Venezolana',           'Bebida espesa y dulce a base de arroz y leche, servida muy fría con abundante hielo, canela y leche condensada.', 4.0, 'bebidas', 'cup-soda', 'assets/product_chicha.webp', NULL, 'bebidas', 1);
+-- Categorías
+INSERT OR IGNORE INTO product_types (id, name, description, icon) VALUES
+('entradas', 'Entradas y Pasapalos', 'Tequeños, empanaditas y delicias para abrir el apetito.', 'utensils'),
+('principales', 'Platos Principales', 'Pabellón criollo, carnes a la brasa, cachapas y asados.', 'flame'),
+('combos', 'Combos y Promociones', 'La mejor opción para compartir en familia o con amigos.', 'users'),
+('postres', 'Postres Tradicionales', 'Tres leches, quesillo casero y dulces venezolanos.', 'cake'),
+('bebidas', 'Bebidas Típicas', 'Papelón con limón, jugos naturales y refrescos.', 'cup-soda');
 
+-- Platos del Menú
+INSERT OR IGNORE INTO products (id, name, type_id, category, price, icon, description, image_url, sizes, active) VALUES
+('pabellon-criollo', 'Pabellón Criollo Especial', 'principales', 'principales', 12.00, 'utensils', 'Carne mechada tierna y jugosa, caraotas negras con queso blanco rallado, arroz blanco y tajadas de plátano maduro.', 'assets/product_pabellon.webp', 'Carne Mechada, Pollo Mechado', 1),
+('asado-negro', 'Asado Negro Tradicional', 'principales', 'principales', 14.50, 'utensils', 'Corte de res cocinado a fuego lento en reducción dulce de papelón y especias. Acompañado de puré de papas y arroz.', 'assets/product_asado.webp', 'Puré de Papas, Arroz y Ensalada', 1),
+('cachapa-queso', 'Cachapa con Queso de Mano', 'principales', 'principales', 9.50, 'flame', 'Masa fresca de maíz tierno cocida al budare, rellena con auténtico queso de mano y bañada con mantequilla criolla.', 'assets/product_cachapa.webp', 'Sola, Con Pernil (+3$), Con Carne Mechada (+3$)', 1),
+('tequenos-queso', 'Tequeños Tradicionales (6 und)', 'entradas', 'entradas', 6.00, 'utensils', 'Deditos de masa crujiente rellenos con abundante queso llanero fundido. Servidos con salsa tártara de la casa.', 'assets/product_tequenos.webp', '6 unidades, 12 unidades (+5$)', 1),
+('empanaditas-degustacion', 'Mini Empanadas Criollas (4 und)', 'entradas', 'entradas', 5.50, 'utensils', 'Degustación de mini empanadas de maíz crujientes: carne mechada, queso llanero, pollo y cazón fresco.', 'assets/product_empanadas.webp', 'Surtidas, Solo Queso, Solo Carne', 1),
+('combo-parrillero', 'Combo Parrillero Familiar', 'combos', 'combos', 28.00, 'users', 'Para 3-4 personas: Carne de res a la parrilla, pollo asado, chorizo ahumado, yuca con mojo, ensalada y guasacaca.', 'assets/product_parrilla.webp', 'Familiar 4 personas, Pareja 2 personas (-10$)', 1),
+('quesillo-casero', 'Quesillo Tradicional Venezolano', 'postres', 'postres', 4.00, 'cake', 'Postre cremoso a base de huevos, leche condensada y vainilla, cubierto con un rico caramelo dorado hecho a mano.', 'assets/product_quesillo.webp', 'Porción individual', 1),
+('tres-leches', 'Torta Tres Leches', 'postres', 'postres', 4.50, 'cake', 'Bizcocho esponjoso empapado en nuestra mezcla especial de tres leches, coronado con merengue suave y canela.', 'assets/product_tresleches.webp', 'Porción individual', 1),
+('papelon-limon', 'Papelón con Limón (500ml)', 'bebidas', 'bebidas', 2.50, 'cup-soda', 'La bebida criolla por excelencia. Panela de papelón disuelta con abundante jugo de limón fresco y mucho hielo.', 'assets/product_papelon.webp', 'Vaso 500ml, Jarra 1.5L (+3$)', 1);
 
--- Insertar usuario admin inicial (contraseña por defecto: "admin123" usando hash SHA-256 legacy)
-INSERT OR REPLACE INTO users (username, password_hash, password_salt) VALUES
-('admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', NULL);
-
+-- Usuario Administrador por Defecto
+INSERT OR IGNORE INTO users (id, username, password_hash, password_salt) 
+VALUES (1, 'admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', NULL);

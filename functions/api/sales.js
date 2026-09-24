@@ -1,4 +1,4 @@
-// Controlador de Registro de Ventas - Fogon
+// Controlador de Registro de Ventas - FOGÓN Restaurante
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**
@@ -12,11 +12,11 @@ export async function onRequestGet(context) {
     const db = env.DB || env.fogon;
 
     try {
-        // Consultar todas las ventas con información del pedido asociado
+        // Consultar todas las ventas con información del pedido asociado (LEFT JOIN por robustez)
         const { results } = await db.prepare(`
-            SELECT s.*, o.client_name, o.client_phone 
+            SELECT s.*, COALESCE(o.client_name, 'Cliente FOGÓN') as client_name, COALESCE(o.client_phone, '') as client_phone 
             FROM sales s 
-            JOIN orders o ON s.order_id = o.id 
+            LEFT JOIN orders o ON s.order_id = o.id 
             ORDER BY s.fecha DESC
         `).all();
 
@@ -27,7 +27,8 @@ export async function onRequestGet(context) {
             }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en GET /api/sales:", err);
+        return new Response(JSON.stringify({ error: "Error al consultar registro de ventas." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

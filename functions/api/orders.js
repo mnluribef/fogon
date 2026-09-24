@@ -1,13 +1,28 @@
-// Controlador de Pedidos y Ventas - Fogon
+// Controlador de Pedidos y Ventas - FOGÓN Restaurante
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**
- * Genera un ID de pedido único y corto (ej: SUB-X9F4E)
+ * Genera un ID de pedido único y legible (ej: FOG-X9F4E)
  */
 function generateOrderId() {
     const ts = Date.now().toString(36).toUpperCase();
-    const rand = Math.random().toString(36).substring(2, 5).toUpperCase();
-    return `SUB-${ts}${rand}`;
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `FOG-${ts}${rand}`;
+}
+
+/**
+ * Asegura que existan las columnas de comprobante y tasa BCV en la tabla orders
+ */
+async function ensureOrderColumns(db) {
+    try {
+        await db.prepare("ALTER TABLE orders ADD COLUMN payment_receipt TEXT").run();
+    } catch (e) {}
+    try {
+        await db.prepare("ALTER TABLE orders ADD COLUMN bcv_rate REAL DEFAULT 0.0").run();
+    } catch (e) {}
+    try {
+        await db.prepare("ALTER TABLE orders ADD COLUMN total_bs REAL DEFAULT 0.0").run();
+    } catch (e) {}
 }
 
 /**
@@ -19,6 +34,8 @@ export async function onRequestGet(context) {
 
     const { env, request } = context;
     const db = env.DB || env.fogon;
+
+    await ensureOrderColumns(db);
     
     const url = new URL(request.url);
     const orderId = url.searchParams.get("id");
@@ -43,15 +60,13 @@ export async function onRequestGet(context) {
             // Listar todos los pedidos ordenados por fecha
             const { results: orders } = await db.prepare("SELECT * FROM orders ORDER BY created_at DESC").all();
             
-            // Obtener también los items de forma agrupada para evitar N+1 en el panel (opcional, pero excelente para dashboard)
-            // Para simplificar la vista general, el dashboard puede cargar detalles bajo demanda, 
-            // pero incluiremos la lista de pedidos simple primero.
             return new Response(JSON.stringify(orders), {
                 headers: { "Content-Type": "application/json" }
             });
         }
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en GET /api/orders:", err);
+        return new Response(JSON.stringify({ error: "Error interno al consultar pedidos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -60,24 +75,58 @@ export async function onRequestGet(context) {
 
 /**
  * POST /api/orders - Crear un nuevo pedido (Público)
- * Recibe: { clientName, clientPhone, items }
+ * Recibe: { clientName, clientPhone, deliveryType, deliveryAddress, deliveryNotes, paymentMethod, paymentReference, paymentReceipt, bcvRate, items }
  */
 export async function onRequestPost(context) {
     const { env, request } = context;
     const db = env.DB || env.fogon;
 
+    await ensureOrderColumns(db);
+
     try {
         const data = await request.json();
-        const { clientName, clientPhone, deliveryType = 'retiro', deliveryAddress = '', deliveryNotes = '', paymentMethod = '', paymentReference = '', items } = data;
+        const {
+            clientName,
+            clientPhone,
+            deliveryType = 'retiro',
+            deliveryAddress = '',
+            deliveryNotes = '',
+            paymentMethod = '',
+            paymentReference = '',
+            paymentReceipt = null,
+            bcvRate = null,
+            items
+        } = data;
 
-        if (!clientName || !clientPhone || !items || !Array.isArray(items) || items.length === 0) {
+        // Validaciones estrictas de entrada
+        if (!clientName || typeof clientName !== 'string' || !clientName.trim() ||
+            !clientPhone || typeof clientPhone !== 'string' || !clientPhone.trim() ||
+            !items || !Array.isArray(items) || items.length === 0) {
             return new Response(JSON.stringify({ error: "Datos del pedido incompletos o inválidos." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
         }
+
+        const cleanClientName = clientName.trim().slice(0, 100);
+        const cleanClientPhone = clientPhone.trim().slice(0, 30);
+        const cleanDeliveryType = deliveryType === 'delivery' ? 'delivery' : 'retiro';
+        const cleanDeliveryAddress = (deliveryAddress || '').trim().slice(0, 300);
+        const cleanDeliveryNotes = (deliveryNotes || '').trim().slice(0, 500);
+        const cleanPaymentMethod = (paymentMethod || '').trim().slice(0, 50);
+        const cleanPaymentReference = (paymentReference || '').trim().slice(0, 100);
         
-        if (deliveryType === 'delivery' && !deliveryAddress.trim()) {
+        // Validación de comprobante de pago (Data URL JPEG/PNG/WebP, max ~1.8MB)
+        let cleanPaymentReceipt = null;
+        if (paymentReceipt && typeof paymentReceipt === 'string') {
+            if (/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(paymentReceipt.slice(0, 100))) {
+                if (paymentReceipt.length <= 2500000) { // ~1.8MB en Base64
+                    cleanPaymentReceipt = paymentReceipt;
+                }
+            }
+        }
+
+        if (cleanDeliveryType === 'delivery' && !cleanDeliveryAddress) {
             return new Response(JSON.stringify({ error: "La dirección es requerida para el delivery." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
@@ -99,61 +148,88 @@ export async function onRequestPost(context) {
             }
         }
 
-        // Calcular cantidades y precios totales
+        // Cargar catálogo de la base de datos para mapeo confiable de precios e IDs
+        const { results: dbProducts } = await db.prepare("SELECT id, name, price FROM products").all();
+        const productMap = new Map();
+        for (const p of dbProducts) {
+            productMap.set(p.id, p);
+        }
+
+        // Obtener la tasa BCV guardada para garantizar exactitud financiera
+        let finalBcvRate = 36.50;
+        try {
+            const bcvSetting = await db.prepare("SELECT value FROM settings WHERE key = 'bcv_rate'").first();
+            if (bcvSetting && parseFloat(bcvSetting.value) > 0) {
+                finalBcvRate = parseFloat(bcvSetting.value);
+            } else if (bcvRate && parseFloat(bcvRate) > 0) {
+                finalBcvRate = parseFloat(bcvRate);
+            }
+        } catch (e) {
+            if (bcvRate && parseFloat(bcvRate) > 0) finalBcvRate = parseFloat(bcvRate);
+        }
+
         let totalItems = 0;
         let totalPrice = 0.0;
-        
-        // Cargar precios de productos para validar en base de datos
-        const { results: dbProducts } = await db.prepare("SELECT id, price FROM products").all();
-        const productPriceMap = dbProducts.reduce((acc, p) => {
-            acc[p.id] = p.price;
-            return acc;
-        }, {});
-
-        // Crear sentencias para batching (Transacción D1)
         const statements = [];
 
-        // 1. Sentencia para insertar el Pedido
+        // 1. Sentencia para insertar el Pedido base
         statements.push(
             db.prepare(
-                "INSERT INTO orders (id, client_name, client_phone, delivery_type, delivery_address, delivery_notes, payment_method, payment_reference, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO orders (id, client_name, client_phone, delivery_type, delivery_address, delivery_notes, payment_method, payment_reference, payment_receipt, bcv_rate, total_bs, status, total_items, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(
                 orderId,
-                clientName.trim(),
-                clientPhone.trim(),
-                deliveryType,
-                deliveryAddress.trim(),
-                deliveryNotes.trim(),
-                paymentMethod,
-                paymentReference.trim(),
+                cleanClientName,
+                cleanClientPhone,
+                cleanDeliveryType,
+                cleanDeliveryAddress,
+                cleanDeliveryNotes,
+                cleanPaymentMethod,
+                cleanPaymentReference,
+                cleanPaymentReceipt,
+                finalBcvRate,
+                0.0,
                 "pendiente",
-                totalItems, // Se actualizará al final
-                totalPrice // Se actualizará al final
+                0,
+                0.0
             )
         );
 
         // 2. Sentencias para insertar cada producto del pedido
         for (const item of items) {
-            // Mapear el key del producto a su ID de base de datos
-            // Por ejemplo, "taza" -> "taza", "franela-S" -> "franela"
-            const prodId = item.key.split("-")[0];
-            const price = productPriceMap[prodId] || 0.0;
-            const qty = parseInt(item.qty) || 1;
+            if (!item) continue;
+
+            let matchedProduct = null;
+            if (item.id && productMap.has(item.id)) {
+                matchedProduct = productMap.get(item.id);
+            } else if (item.key && productMap.has(item.key)) {
+                matchedProduct = productMap.get(item.key);
+            } else {
+                matchedProduct = dbProducts.find(p => 
+                    (item.key && (item.key === p.id || item.key.startsWith(p.id + '-'))) ||
+                    (item.name && p.name.trim().toLowerCase() === String(item.name).trim().toLowerCase())
+                );
+            }
+
+            const prodId = matchedProduct ? matchedProduct.id : (String(item.id || item.key || 'item').slice(0, 50));
+            const price = matchedProduct ? parseFloat(matchedProduct.price) : (parseFloat(item.price) || 0.0);
+            const qty = Math.max(1, Math.min(999, parseInt(item.qty) || 1));
+            const prodName = (matchedProduct ? matchedProduct.name : (item.name || 'Plato')).slice(0, 150);
             
             let size = null;
             if (item.options && typeof item.options === 'object') {
                 const entries = Object.entries(item.options).filter(([_, v]) => v);
                 if (entries.length === 1 && entries[0][0] === 'size') {
-                    size = entries[0][1];
+                    size = String(entries[0][1]).slice(0, 100);
                 } else if (entries.length > 0) {
                     const labels = {
-                        size: 'Talla',
-                        color: 'Color',
-                        finish: 'Acabado',
-                        capacity: 'Capacidad'
+                        size: 'Tamaño',
+                        proteina: 'Proteína',
+                        punto: 'Punto',
+                        salsa: 'Salsa',
+                        cantidad: 'Cantidad'
                     };
-                    size = entries.map(([k, v]) => `${labels[k] || k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join(', ');
+                    size = entries.map(([k, v]) => `${labels[k] || k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join(', ').slice(0, 200);
                 }
             }
 
@@ -167,7 +243,7 @@ export async function onRequestPost(context) {
                 .bind(
                     orderId,
                     prodId,
-                    item.name,
+                    prodName,
                     size,
                     qty,
                     price
@@ -175,31 +251,38 @@ export async function onRequestPost(context) {
             );
         }
 
-        if (deliveryType === 'delivery') {
+        // Si es delivery, sumar los $5 de costo de envío
+        if (cleanDeliveryType === 'delivery') {
             totalPrice += 5.0;
         }
 
+        // Calcular total en Bolívares
+        const totalBs = Math.round((totalPrice * finalBcvRate) * 100) / 100;
+
         // 3. Sentencia final para actualizar totales del pedido
         statements.push(
-            db.prepare("UPDATE orders SET total_items = ?, total_price = ? WHERE id = ?")
-            .bind(totalItems, totalPrice, orderId)
+            db.prepare("UPDATE orders SET total_items = ?, total_price = ?, total_bs = ? WHERE id = ?")
+            .bind(totalItems, totalPrice, totalBs, orderId)
         );
 
-        // Ejecutar todas las sentencias de forma atómica en un lote
+        // Ejecutar todas las sentencias de forma atómica en un lote D1
         await db.batch(statements);
 
         return new Response(JSON.stringify({ 
             success: true, 
             orderId, 
             totalItems, 
-            totalPrice 
+            totalPrice,
+            totalBs,
+            bcvRate: finalBcvRate
         }), {
             status: 201,
             headers: { "Content-Type": "application/json" }
         });
 
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en POST /api/orders:", err);
+        return new Response(JSON.stringify({ error: "Error al procesar el pedido. Por favor intenta de nuevo." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -217,11 +300,21 @@ export async function onRequestPut(context) {
     const { env, request } = context;
     const db = env.DB || env.fogon;
 
+    await ensureOrderColumns(db);
+
     try {
         const { id, status, paymentMethod } = await request.json();
 
         if (!id || !status) {
             return new Response(JSON.stringify({ error: "ID y Estado son requeridos." }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
+        const validStatuses = ['pendiente', 'en_produccion', 'listo_entrega', 'completado', 'cancelado'];
+        if (!validStatuses.includes(status)) {
+            return new Response(JSON.stringify({ error: "Estado no válido." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
@@ -240,12 +333,11 @@ export async function onRequestPut(context) {
 
         // Actualizar el estado del pedido
         statements.push(
-            db.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id)
+            db.prepare("UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(status, id)
         );
 
         // Si el estado pasa a "completado", registrar venta en la tabla 'sales'
         if (status === "completado") {
-            // Verificar si ya hay una venta registrada para este pedido
             const existingSale = await db.prepare("SELECT id FROM sales WHERE order_id = ?").bind(id).first();
             
             if (!existingSale) {
@@ -256,7 +348,7 @@ export async function onRequestPut(context) {
                     .bind(
                         id,
                         order.total_price,
-                        paymentMethod || "WhatsApp / Por acordar"
+                        paymentMethod || order.payment_method || "WhatsApp / Por acordar"
                     )
                 );
             }
@@ -269,7 +361,8 @@ export async function onRequestPut(context) {
         });
 
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en PUT /api/orders:", err);
+        return new Response(JSON.stringify({ error: "Error interno al actualizar pedido." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -297,29 +390,22 @@ export async function onRequestDelete(context) {
             });
         }
 
-        // Eliminar pedido (los items se eliminan por CASCADE en SQLite si está habilitado FK, 
-        // pero por seguridad también los borramos explícitamente en lote si es necesario).
-        const statements = [
-            db.prepare("DELETE FROM order_items WHERE order_id = ?").bind(id),
-            db.prepare("DELETE FROM sales WHERE order_id = ?").bind(id),
-            db.prepare("DELETE FROM orders WHERE id = ?").bind(id)
-        ];
+        await db.prepare("DELETE FROM order_items WHERE order_id = ?").bind(id).run();
+        const result = await db.prepare("DELETE FROM orders WHERE id = ?").bind(id).run();
 
-        const results = await db.batch(statements);
-        
-        // El último elemento corresponde al borrado de orders
-        if (results[2].meta.changes === 0) {
+        if (result.meta.changes === 0) {
             return new Response(JSON.stringify({ error: "Pedido no encontrado." }), {
                 status: 404,
                 headers: { "Content-Type": "application/json" }
             });
         }
 
-        return new Response(JSON.stringify({ success: true, message: "Pedido eliminado del sistema." }), {
+        return new Response(JSON.stringify({ success: true, message: "Pedido eliminado." }), {
             headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en DELETE /api/orders:", err);
+        return new Response(JSON.stringify({ error: "Error interno al eliminar pedido." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

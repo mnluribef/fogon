@@ -3,71 +3,151 @@
 ---
 
 <header class="glass-nav">
-  <div class="container">
-    <nav>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-        <span class="logo-text">FOG<span>ÓN</span></span>
-      </div>
-      <div class="nav-separator">|</div>
-      <ul class="nav-links">
-        <li><a href="#nosotros">NUESTRA COCINA</a></li>
-        <li><a href="#menu">MENÚ</a></li>
-        <li><a href="#como-pedir">CÓMO PEDIR</a></li>
-        <li><a href="#testimonios">RESEÑAS</a></li>
-        <li><a href="#faq">PREGUNTAS</a></li>
-      </ul>
-      <div class="header-actions">
-        <button
-          id="mobile-menu-btn"
-          aria-label="Abrir menú"
-          style="background: none; border: none; cursor: pointer; display: none;"
-        >
-          <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-        </button>
-      </div>
-    </nav>
-  </div>
+    <div class="container">
+        <nav>
+            <div class="logo">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                </svg>
+                <span class="logo-text">
+                    FOG<span>ÓN</span>
+                </span>
+            </div>
+            <div class="nav-separator">|</div>
+            <ul class="nav-links">
+                <li>
+                    <a href="#nosotros">NUESTRA COCINA</a>
+                </li>
+                <li>
+                    <a href="#menu">MENÚ</a>
+                </li>
+                <li>
+                    <a href="#como-pedir">CÓMO PEDIR</a>
+                </li>
+                <li>
+                    <a href="#testimonios">RESEÑAS</a>
+                </li>
+                <li>
+                    <a href="#faq">PREGUNTAS</a>
+                </li>
+            </ul>
+            <div
+                class="header-actions"
+                style="display: flex; align-items: center; gap: 0.8rem;"
+            >
+                <div
+                    id="nav-bcv-badge"
+                    style="display: none; align-items: center; gap: 0.35rem; background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 50px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-weight: 600; color: #D4AF37; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                    title="Tasa Oficial del Banco Central de Venezuela"
+                >
+                    <span style="font-size: 0.85rem;">🇻🇪</span>
+                    <span>
+                        BCV: <strong id="nav-bcv-rate">--</strong> Bs.
+                    </span>
+                </div>
+                <button
+                    id="mobile-menu-btn"
+                    aria-label="Abrir menú"
+                    style="background: none; border: none; cursor: pointer; display: none;"
+                >
+                    <svg
+                        id="menu-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="4" x2="20" y1="12" y2="12" />
+                        <line x1="4" x2="20" y1="6" y2="6" />
+                        <line x1="4" x2="20" y1="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+    </div>
 </header>
 
 <script>
-  // Navbar scroll effect
-  const header = document.querySelector('.glass-nav') as HTMLElement;
-  if (header) {
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    }, { passive: true });
-  }
+    // Navbar scroll effect
+    const header = document.querySelector(".glass-nav") as HTMLElement;
+    if (header) {
+        window.addEventListener(
+            "scroll",
+            () => {
+                header.classList.toggle("scrolled", window.scrollY > 50);
+            },
+            { passive: true },
+        );
+    }
 
-  // Smooth scroll
-  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', (e) => {
-      e.preventDefault();
-      const target = document.querySelector(anchor.getAttribute('href')!);
-      if (target) {
-        window.scrollTo({ top: (target as HTMLElement).offsetTop - 80, behavior: 'smooth' });
-      }
-    });
-  });
+    // Smooth scroll
+    document
+        .querySelectorAll<HTMLAnchorElement>('a[href^="#"]')
+        .forEach((anchor) => {
+            anchor.addEventListener("click", (e) => {
+                e.preventDefault();
+                const target = document.querySelector(
+                    anchor.getAttribute("href")!,
+                );
+                if (target) {
+                    window.scrollTo({
+                        top: (target as HTMLElement).offsetTop - 80,
+                        behavior: "smooth",
+                    });
+                }
+            });
+        });
 
-  // Mobile menu toggle
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const navLinks = document.querySelector('.nav-links');
-  const menuIcon = document.getElementById('menu-icon');
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+    const navLinks = document.querySelector(".nav-links");
+    const menuIcon = document.getElementById("menu-icon");
 
-  const MENU_ICON = `<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>`;
-  const CLOSE_ICON = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
+    const MENU_ICON = `<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>`;
+    const CLOSE_ICON = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
 
-  if (mobileMenuBtn && navLinks && menuIcon) {
-    mobileMenuBtn.addEventListener('click', () => {
-      const isOpen = navLinks.classList.toggle('active');
-      menuIcon.innerHTML = isOpen ? CLOSE_ICON : MENU_ICON;
-    });
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        menuIcon.innerHTML = MENU_ICON;
-      });
-    });
-  }
+    if (mobileMenuBtn && navLinks && menuIcon) {
+        mobileMenuBtn.addEventListener("click", () => {
+            const isOpen = navLinks.classList.toggle("active");
+            menuIcon.innerHTML = isOpen ? CLOSE_ICON : MENU_ICON;
+        });
+        navLinks.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => {
+                navLinks.classList.remove("active");
+                menuIcon.innerHTML = MENU_ICON;
+            });
+        });
+    }
+
+    // Cargar Tasa BCV en la barra superior
+    const loadHeaderBcv = async () => {
+        try {
+            const res = await fetch("/api/bcv");
+            if (res.ok) {
+                const data = await res.json();
+                const badge = document.getElementById("nav-bcv-badge");
+                const rateSpan = document.getElementById("nav-bcv-rate");
+                if (badge && rateSpan && data.rate) {
+                    rateSpan.textContent = parseFloat(data.rate).toFixed(2);
+                    badge.style.display = "inline-flex";
+                }
+            }
+        } catch (e) {}
+    };
+    loadHeaderBcv();
 </script>

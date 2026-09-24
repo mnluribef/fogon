@@ -1,10 +1,12 @@
-// Lógica del Panel Administrativo - FOGÓN
+// Lógica del Panel Administrativo - FOGÓN Restaurante
 
 // Variables de estado
 let currentAdmin = null;
 let ordersList = [];
 let productsList = [];
 let salesList = [];
+let currentBcvRate = 36.50;
+let currentBcvAuto = true;
 
 // Elementos del DOM
 const loader = document.getElementById('page-loader');
@@ -25,6 +27,7 @@ const productForm = document.getElementById('product-form');
 const btnCancelEdit = document.getElementById('btn-cancel-edit');
 const formProductTitle = document.getElementById('form-product-title');
 const btnSubmitProduct = document.getElementById('btn-submit-product');
+const btnToggleProductForm = document.getElementById('btn-toggle-product-form');
 
 // Modal Detalles Pedido
 const orderModal = document.getElementById('order-detail-modal');
@@ -41,9 +44,26 @@ const paymentReferenceInput = document.getElementById('payment-reference');
 const referenceGroup = document.getElementById('reference-group');
 const paymentModalOrderId = document.getElementById('payment-modal-order-id');
 
+// Modal Cambiar Contraseña
+const changePasswordModal = document.getElementById('change-password-modal');
+const btnOpenChangePassword = document.getElementById('btn-open-change-password');
+const btnClosePasswordModal = document.getElementById('btn-close-password-modal');
+const btnCancelPasswordModal = document.getElementById('btn-cancel-password-modal');
+const changePasswordForm = document.getElementById('change-password-form');
+
 let pendingPaymentOrderId = null;
 let pendingPaymentStatus = null;
 
+// --- UTILIDAD DE SANITIZACIÓN CONTRA STORED XSS ---
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 // --- HASHING DE CONTRASEÑA ---
 /**
@@ -60,14 +80,12 @@ async function sha256(password) {
 
 // --- SISTEMA DE TOASTS (NOTIFICACIONES) ---
 /**
- * Muestra una notificación flotante premium
+ * Muestra una notificación flotante segura
  * @param {string} message 
  * @param {string} type - 'success', 'error', 'warning', 'info'
  */
 function showToast(message, type = 'success') {
-    if (toastContainer) {
-        toastContainer.innerHTML = '';
-    }
+    if (!toastContainer) return;
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -77,13 +95,14 @@ function showToast(message, type = 'success') {
     if (type === 'warning') icon = 'alert-circle';
     if (type === 'info') icon = 'info';
 
-    toast.innerHTML = `
-        <i data-lucide="${icon}"></i>
-        <span>${message}</span>
-    `;
+    const span = document.createElement('span');
+    span.textContent = message;
+
+    toast.innerHTML = `<i data-lucide="${icon}"></i>`;
+    toast.appendChild(span);
 
     toastContainer.appendChild(toast);
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     setTimeout(() => {
         toast.remove();
@@ -157,10 +176,9 @@ if (loginForm) {
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Verificando...';
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
 
         try {
-            // Hashear contraseña localmente
             const passwordHash = await sha256(passwordPlain);
 
             const res = await fetch('/api/auth', {
@@ -181,65 +199,139 @@ if (loginForm) {
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de conexión al servidor.', 'error');
+            showToast('Error de red al intentar iniciar sesión', 'error');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i data-lucide="shield-check"></i> Ingresar al Panel';
-            lucide.createIcons();
+            submitBtn.innerHTML = 'Iniciar Sesión <i data-lucide="arrow-right"></i>';
+            if (window.lucide) lucide.createIcons();
         }
     });
 }
 
-// Logout Click
+// Logout
 if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
         try {
-            const res = await fetch('/api/auth', { method: 'DELETE' });
-            if (res.ok) {
-                currentAdmin = null;
-                showToast('Sesión cerrada con éxito.', 'info');
-                showLogin();
-            } else {
-                showToast('No se pudo cerrar la sesión correctamente.', 'error');
-            }
+            await fetch('/api/auth', { method: 'DELETE' });
+            currentAdmin = null;
+            showToast('Sesión cerrada correctamente.', 'info');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 600);
         } catch (err) {
-            console.error(err);
-            showToast('Error de conexión al cerrar sesión.', 'error');
+            console.error("Error en logout:", err);
+            window.location.href = '/login';
         }
     });
 }
 
-// --- NAVEGACIÓN EN EL PANEL ---
+// --- CAMBIAR CONTRASEÑA ---
+if (btnOpenChangePassword && changePasswordModal) {
+    btnOpenChangePassword.addEventListener('click', () => {
+        changePasswordModal.classList.add('active');
+        if (changePasswordForm) changePasswordForm.reset();
+        document.getElementById('current-password-input')?.focus();
+    });
+}
+
+function closePasswordModal() {
+    if (changePasswordModal) changePasswordModal.classList.remove('active');
+}
+if (btnClosePasswordModal) btnClosePasswordModal.addEventListener('click', closePasswordModal);
+if (btnCancelPasswordModal) btnCancelPasswordModal.addEventListener('click', closePasswordModal);
+if (changePasswordModal) {
+    changePasswordModal.addEventListener('click', (e) => {
+        if (e.target === changePasswordModal) closePasswordModal();
+    });
+}
+
+if (changePasswordForm) {
+    changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const currentPass = document.getElementById('current-password-input')?.value;
+        const newPass = document.getElementById('new-password-input')?.value;
+        const confirmPass = document.getElementById('confirm-password-input')?.value;
+        const submitBtn = document.getElementById('btn-submit-password');
+
+        if (!currentPass || !newPass || !confirmPass) {
+            showToast('Por favor completa todos los campos.', 'warning');
+            return;
+        }
+
+        if (newPass.length < 8) {
+            showToast('La nueva clave debe tener al menos 8 caracteres.', 'warning');
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            showToast('La nueva contraseña y su confirmación no coinciden.', 'warning');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Actualizando...';
+        if (window.lucide) lucide.createIcons();
+
+        try {
+            const currentPasswordHash = await sha256(currentPass);
+            const newPasswordHash = await sha256(newPass);
+
+            const res = await fetch('/api/auth', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPasswordHash, newPasswordHash })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                showToast('¡Contraseña cambiada exitosamente!', 'success');
+                closePasswordModal();
+                changePasswordForm.reset();
+            } else {
+                showToast(data.error || 'Error al cambiar la contraseña.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de red al actualizar contraseña.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="save"></i> Actualizar Clave';
+            if (window.lucide) lucide.createIcons();
+        }
+    });
+}
+
+// --- NAVEGACIÓN ENTRE SECCIONES DEL SIDEBAR ---
 sidebarLinks.forEach(link => {
     link.addEventListener('click', () => {
         sidebarLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
 
-        const targetSectionId = link.getAttribute('data-target');
-        sections.forEach(sec => sec.classList.remove('active'));
-        document.getElementById(targetSectionId).classList.add('active');
+        const targetId = link.getAttribute('data-target');
+        sections.forEach(sec => {
+            sec.classList.remove('active');
+            if (sec.id === targetId) sec.classList.add('active');
+        });
 
-        // Actualizar títulos del Header principal
-        if (targetSectionId === 'section-metrics') {
-            dashboardTitle.textContent = 'Métricas Generales';
-            dashboardSubtitle.textContent = 'Control de ventas, catálogo y procesamiento de pedidos en tiempo real.';
-        } else if (targetSectionId === 'section-orders') {
-            dashboardTitle.textContent = 'Gestión de Pedidos';
-            dashboardSubtitle.textContent = 'Revisa detalles, controla procesos y cambia el estado de tus solicitudes.';
-            loadOrders();
-        } else if (targetSectionId === 'section-sales') {
-            dashboardTitle.textContent = 'Registro de Ventas';
-            dashboardSubtitle.textContent = 'Consulta y analiza el histórico de cobros y pagos recibidos por los pedidos completados.';
-            loadSales();
-        } else if (targetSectionId === 'section-inventory') {
-            dashboardTitle.textContent = 'Inventario & Catálogo';
-            dashboardSubtitle.textContent = 'Crea nuevos productos, actualiza precios, cambia visibilidad o edita información.';
-            loadProducts();
+        // Actualizar encabezados
+        if (targetId === 'section-metrics') {
+            if (dashboardTitle) dashboardTitle.textContent = 'Métricas Generales';
+            if (dashboardSubtitle) dashboardSubtitle.textContent = 'Visión global de rendimiento, pedidos y catálogo en FOGÓN.';
+        } else if (targetId === 'section-orders') {
+            if (dashboardTitle) dashboardTitle.textContent = 'Gestión de Pedidos';
+            if (dashboardSubtitle) dashboardSubtitle.textContent = 'Revisa y actualiza el estado de los pedidos recibidos por la web.';
+        } else if (targetId === 'section-sales') {
+            if (dashboardTitle) dashboardTitle.textContent = 'Registro de Ventas';
+            if (dashboardSubtitle) dashboardSubtitle.textContent = 'Histórico de pedidos completados y cobrados exitosamente.';
+        } else if (targetId === 'section-inventory') {
+            if (dashboardTitle) dashboardTitle.textContent = 'Gestión del Menú';
+            if (dashboardSubtitle) dashboardSubtitle.textContent = 'Agrega, edita precios y administra los platillos ofrecidos.';
         }
     });
 });
 
-// Enlace "Ver todos" de la pestaña métricas
 document.querySelectorAll('.view-all-orders-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const ordersTab = document.querySelector('.sidebar-link[data-target="section-orders"]');
@@ -249,8 +341,35 @@ document.querySelectorAll('.view-all-orders-btn').forEach(btn => {
 
 // --- CARGA Y RENDERIZACIÓN DE DATOS ---
 
+
+// Cargar Tasa Oficial BCV
+async function loadBcvRate() {
+    try {
+        const res = await fetch('/api/bcv');
+        if (res.ok) {
+            const data = await res.json();
+            currentBcvRate = parseFloat(data.rate) || 36.50;
+            currentBcvAuto = data.autoUpdate !== false;
+            const display = document.getElementById('admin-bcv-val');
+            if (display) display.textContent = `${currentBcvRate.toFixed(2)} Bs.`;
+            
+            const input = document.getElementById('bcv-rate-input');
+            const toggle = document.getElementById('bcv-auto-toggle');
+            const syncText = document.getElementById('bcv-last-sync-text');
+            if (input) input.value = currentBcvRate.toFixed(2);
+            if (toggle) toggle.checked = currentBcvAuto;
+            if (syncText) {
+                syncText.textContent = data.updatedAt ? `Última actualización: ${data.updatedAt}` : `Fuente: ${data.source || 'BCV'}`;
+            }
+        }
+    } catch (e) {
+        console.error("Error al consultar tasa BCV:", e);
+    }
+}
+
 async function refreshAllData() {
     await Promise.all([
+        loadBcvRate(),
         loadOrders(),
         loadProducts(),
         loadSales()
@@ -280,7 +399,7 @@ async function loadProducts() {
         renderProductsTable();
     } catch (err) {
         console.error(err);
-        showToast('Error al cargar productos del servidor.', 'error');
+        showToast('Error al cargar menú del servidor.', 'error');
     }
 }
 
@@ -301,7 +420,6 @@ function renderSales() {
     const tableSales = document.getElementById('table-all-sales');
     const salesTotalSpan = document.getElementById('sales-total-amount');
 
-    // Calcular monto total de forma segura convirtiendo a flotante para evitar concatenación
     const totalAmount = salesList.reduce((sum, s) => sum + (parseFloat(s.monto) || 0), 0);
     if (salesTotalSpan) {
         salesTotalSpan.textContent = `(Total Facturado: $${totalAmount.toFixed(2)})`;
@@ -328,27 +446,25 @@ function renderSales() {
 
         return `
             <tr>
-                <td><strong>#V-${s.id}</strong></td>
-                <td><code style="font-weight: 700; color: var(--primary);">${s.order_id}</code></td>
-                <td>${s.client_name}</td>
-                <td>${s.client_phone}</td>
+                <td><strong>#V-${escapeHtml(s.id)}</strong></td>
+                <td><code style="font-weight: 700; color: var(--primary);">${escapeHtml(s.order_id)}</code></td>
+                <td>${escapeHtml(s.client_name)}</td>
+                <td>${escapeHtml(s.client_phone)}</td>
                 <td style="font-weight: 700; color: var(--success);">$${montoVal.toFixed(2)}</td>
-                <td><span style="background: rgba(34, 197, 94, 0.1); color: var(--success); padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">${s.metodo_pago}</span></td>
+                <td><span style="background: rgba(34, 197, 94, 0.1); color: var(--success); padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">${escapeHtml(s.metodo_pago)}</span></td>
                 <td style="font-size: 0.85rem; color: var(--text-secondary);">${dateString}</td>
             </tr>
         `;
     }).join('');
 
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 }
 
 // --- RENDER DE MÉTRICAS ---
 function renderMetrics() {
-    // Total de productos
     const metricProdCount = document.getElementById('metric-prod-count');
     if (metricProdCount) metricProdCount.textContent = productsList.length;
 
-    // Pedidos pendientes y en producción
     const pendingOrders = ordersList.filter(o => o.status === 'pendiente');
     const prodOrders = ordersList.filter(o => o.status === 'en_produccion');
     
@@ -358,18 +474,12 @@ function renderMetrics() {
     const metricProd = document.getElementById('metric-prod-orders');
     if (metricProd) metricProd.textContent = prodOrders.length;
 
-    // Métricas de ventas registradas (Pedidos completados)
     const completedOrders = ordersList.filter(o => o.status === 'completado');
     const metricSalesCount = document.getElementById('metric-sales-count');
     
     if (metricSalesCount) {
-        // En Venezuela a veces los precios son cotizados (0.00), sumamos el valor real si existe de forma segura
         const totalSalesSum = completedOrders.reduce((sum, o) => sum + (parseFloat(o.total_price) || 0), 0);
-        if (totalSalesSum > 0) {
-            metricSalesCount.textContent = `$${totalSalesSum.toFixed(2)}`;
-        } else {
-            metricSalesCount.textContent = completedOrders.length; // Si son todos de cotizar, muestra contador
-        }
+        metricSalesCount.textContent = `$${totalSalesSum.toFixed(2)}`;
     }
 }
 
@@ -379,7 +489,6 @@ function renderOrders() {
     const tableAll = document.getElementById('table-all-orders');
     const tableRecent = document.getElementById('table-recent-orders');
 
-    // Calcular totalizaciones de forma segura evitando concatenaciones de cadenas
     const totalOrdersSum = ordersList.reduce((sum, o) => sum + (parseFloat(o.total_price) || 0), 0);
     const nonCancelledOrders = ordersList.filter(o => o.status !== 'cancelado');
     const activeOrdersSum = nonCancelledOrders.reduce((sum, o) => sum + (parseFloat(o.total_price) || 0), 0);
@@ -408,7 +517,7 @@ function renderOrders() {
         }
     }
 
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 }
 
 function createOrderRowMarkup(order, includeStatusSelector = true) {
@@ -421,37 +530,39 @@ function createOrderRowMarkup(order, includeStatusSelector = true) {
         minute: '2-digit'
     });
 
-    const priceText = order.total_price > 0 ? `$${order.total_price.toFixed(2)}` : 'Cotización';
+    const priceText = order.total_price > 0 ? `$${parseFloat(order.total_price).toFixed(2)}` : '$0.00';
     
     let statusSelector = '';
     if (includeStatusSelector) {
         statusSelector = `
-            <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
+            <select class="status-select" onchange="updateOrderStatus('${escapeHtml(order.id)}', this.value)">
                 <option value="pendiente" ${order.status === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-                <option value="en_produccion" ${order.status === 'en_produccion' ? 'selected' : ''}>En Producción</option>
+                <option value="en_produccion" ${order.status === 'en_produccion' ? 'selected' : ''}>En Preparación</option>
                 <option value="listo_entrega" ${order.status === 'listo_entrega' ? 'selected' : ''}>Listo para Entrega</option>
                 <option value="completado" ${order.status === 'completado' ? 'selected' : ''}>Completado</option>
                 <option value="cancelado" ${order.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
             </select>
         `;
     } else {
-        statusSelector = `<span class="status-badge ${order.status}">${order.status.replace('_', ' ')}</span>`;
+        statusSelector = `<span class="status-badge ${escapeHtml(order.status)}">${escapeHtml(order.status).replace('_', ' ')}</span>`;
     }
 
-    return `
+        const hasReceipt = Boolean(order.payment_receipt);
+        const receiptBadge = hasReceipt ? ' <span title="Comprobante de pago adjunto" style="cursor:help;">📸</span>' : '';
+        return `
         <tr>
-            <td><strong>#${order.id}</strong></td>
-            <td>${order.client_name}</td>
-            <td>${order.client_phone}</td>
-            <td>${order.total_items} items (${priceText})</td>
+            <td><strong>#${escapeHtml(order.id)}</strong>${receiptBadge}</td>
+            <td>${escapeHtml(order.client_name)}</td>
+            <td>${escapeHtml(order.client_phone)}</td>
+            <td>${escapeHtml(order.total_items)} items (${priceText})</td>
             <td style="font-size:0.8rem; color:var(--text-secondary);">${dateString}</td>
             <td>${statusSelector}</td>
             <td>
                 <div style="display:flex; gap:0.5rem;">
-                    <button class="action-icon-btn edit" onclick="viewOrderDetails('${order.id}')" title="Ver Detalles">
+                    <button class="action-icon-btn edit" onclick="viewOrderDetails('${escapeHtml(order.id)}')" title="Ver Detalles">
                         <i data-lucide="eye" style="width:18px; height:18px;"></i>
                     </button>
-                    <button class="action-icon-btn delete" onclick="deleteOrder('${order.id}')" title="Eliminar Pedido">
+                    <button class="action-icon-btn delete" onclick="deleteOrder('${escapeHtml(order.id)}')" title="Eliminar Pedido">
                         <i data-lucide="trash-2" style="width:18px; height:18px;"></i>
                     </button>
                 </div>
@@ -491,7 +602,7 @@ async function deleteOrder(orderId) {
     }
 
     try {
-        const response = await fetch(`/api/orders?id=${orderId}`, {
+        const response = await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`, {
             method: 'DELETE'
         });
 
@@ -505,60 +616,128 @@ async function deleteOrder(orderId) {
     }
 }
 
-// Ver detalles del pedido en Modal
+// Ver detalles del pedido en Modal (Sanitizado contra XSS)
 async function viewOrderDetails(orderId) {
     try {
-        const res = await fetch(`/api/orders?id=${orderId}`);
+        const res = await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`);
         if (!res.ok) throw new Error('Error al obtener detalles');
         const order = await res.json();
 
-        // Rellenar modal
-        document.getElementById('modal-order-title').textContent = `Detalles del Pedido #${order.id}`;
-        document.getElementById('modal-client-name').textContent = order.client_name;
-        document.getElementById('modal-client-phone').textContent = order.client_phone;
+        // Rellenar modal mediante textContent para seguridad total
+        const titleElem = document.getElementById('modal-order-title');
+        if (titleElem) titleElem.textContent = `Detalles del Pedido #${order.id}`;
+
+        const clientNameElem = document.getElementById('modal-client-name');
+        if (clientNameElem) clientNameElem.textContent = order.client_name;
+
+        const clientPhoneElem = document.getElementById('modal-client-phone');
+        if (clientPhoneElem) clientPhoneElem.textContent = order.client_phone;
         
         const dateObj = new Date(order.created_at);
-        document.getElementById('modal-order-date').textContent = dateObj.toLocaleString('es-VE');
+        const orderDateElem = document.getElementById('modal-order-date');
+        if (orderDateElem) orderDateElem.textContent = dateObj.toLocaleString('es-VE');
 
         // Badge de estado
         const statusBadge = document.getElementById('modal-order-status');
-        statusBadge.className = `status-badge ${order.status}`;
-        statusBadge.textContent = order.status.replace('_', ' ');
+        if (statusBadge) {
+            statusBadge.className = `status-badge ${order.status}`;
+            statusBadge.textContent = (order.status || '').replace('_', ' ');
+        }
 
         // Total del Pedido
-        const totalText = order.total_price > 0 ? `$${parseFloat(order.total_price).toFixed(2)}` : 'Cotización';
+        const totalVal = parseFloat(order.total_price) || 0.0;
+        const totalText = totalVal > 0 ? `${totalVal.toFixed(2)}` : '$0.00';
         const totalElement = document.getElementById('modal-order-total');
         if (totalElement) {
             totalElement.textContent = totalText;
         }
 
-        // Items del pedido
+        const bcvRateUsed = parseFloat(order.bcv_rate) || currentBcvRate;
+        const totalBsVal = parseFloat(order.total_bs) || (totalVal * bcvRateUsed);
+        const totalBsElement = document.getElementById('modal-order-total-bs');
+        if (totalBsElement) {
+            totalBsElement.textContent = `≈ Bs. ${totalBsVal.toFixed(2)} (Tasa: ${bcvRateUsed.toFixed(2)} Bs/$)`;
+        }
+
+        // Comprobante de Pago Adjunto
+        const receiptContainer = document.getElementById('modal-receipt-container');
+        const receiptThumb = document.getElementById('modal-receipt-thumb');
+        const receiptDownloadBtn = document.getElementById('receipt-download-btn');
+        const receiptModalImg = document.getElementById('receipt-modal-img');
+
+        if (order.payment_receipt) {
+            if (receiptContainer) receiptContainer.style.display = 'block';
+            if (receiptThumb) receiptThumb.src = order.payment_receipt;
+            if (receiptDownloadBtn) receiptDownloadBtn.href = order.payment_receipt;
+            if (receiptModalImg) receiptModalImg.src = order.payment_receipt;
+        } else {
+            if (receiptContainer) receiptContainer.style.display = 'none';
+        }
+
+        // Información de Delivery
+        const deliveryTypeElem = document.getElementById('modal-delivery-type');
+        const deliveryAddressContainer = document.getElementById('modal-delivery-address-container');
+        const deliveryAddressElem = document.getElementById('modal-delivery-address');
+        const deliveryNotesContainer = document.getElementById('modal-delivery-notes-container');
+        const deliveryNotesElem = document.getElementById('modal-delivery-notes');
+
+        if (deliveryTypeElem) {
+            const isDelivery = order.delivery_type === 'delivery';
+            deliveryTypeElem.textContent = isDelivery ? '🛵 Delivery a Domicilio' : '🏪 Retiro en Local';
+            
+            if (isDelivery) {
+                if (deliveryAddressContainer) deliveryAddressContainer.style.display = 'block';
+                if (deliveryAddressElem) deliveryAddressElem.textContent = order.delivery_address || 'No especificada';
+                
+                if (order.delivery_notes) {
+                    if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'block';
+                    if (deliveryNotesElem) deliveryNotesElem.textContent = order.delivery_notes;
+                } else {
+                    if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'none';
+                }
+            } else {
+                if (deliveryAddressContainer) deliveryAddressContainer.style.display = 'none';
+                if (deliveryNotesContainer) deliveryNotesContainer.style.display = 'none';
+            }
+        }
+
+        // Información de Pago
+        const paymentMethodElem = document.getElementById('modal-payment-method');
+        const paymentRefElem = document.getElementById('modal-payment-reference');
+        const paymentLabels = {
+            pago_movil: '📱 Pago Móvil',
+            zelle: '🇺🇸 Zelle',
+            efectivo: '💵 Efectivo',
+            punto: '💳 Punto de Venta'
+        };
+
+        if (paymentMethodElem) {
+            paymentMethodElem.textContent = paymentLabels[order.payment_method] || order.payment_method || 'Por acordar';
+        }
+        if (paymentRefElem) {
+            paymentRefElem.textContent = order.payment_reference || 'Sin referencia registrada';
+        }
+
+        // Items del pedido usando unit_price real guardado en DB
         const itemsList = document.getElementById('modal-items-list');
         if (itemsList) {
             if (!order.items || order.items.length === 0) {
                 itemsList.innerHTML = `<p style="color:var(--text-secondary); text-align:center;">No hay detalles de productos registrados.</p>`;
             } else {
                 itemsList.innerHTML = order.items.map(item => {
-                    const sizeText = item.size ? (item.size.includes(':') ? ` [${item.size}]` : ` [Talla: ${item.size}]`) : '';
-                    // Mapear icono
-                    const iconMap = { shirt: 'shirt', coffee: 'coffee', crown: 'crown', scissors: 'scissors', 'circle-dot': 'circle-dot', link: 'link' };
-                    const iconName = iconMap[item.product_id] || 'package';
-
-                    // Buscar precio en productsList para calcular subtotal
-                    const product = productsList.find(p => p.id === item.product_id);
-                    const hasPrice = product && parseFloat(product.price) > 0;
-                    const priceText = hasPrice ? `$${parseFloat(product.price).toFixed(2)}` : 'Cotización';
-                    const subtotalText = hasPrice ? `$${(parseFloat(product.price) * item.quantity).toFixed(2)}` : 'Cotización';
+                    const sizeText = item.size ? ` [${escapeHtml(item.size)}]` : '';
+                    const unitPrice = parseFloat(item.unit_price) || 0.0;
+                    const subtotal = unitPrice * item.quantity;
 
                     return `
                         <div class="detail-item" style="align-items: center;">
                             <div class="detail-item-info">
                                 <div class="detail-item-icon">
-                                    <i data-lucide="${iconName}"></i>
+                                    <i data-lucide="utensils"></i>
                                 </div>
                                 <div class="detail-item-name">
-                                    <h4>${item.product_name}</h4>
-                                    <span>ID: ${item.product_id}${sizeText}</span>
+                                    <h4>${escapeHtml(item.product_name)}</h4>
+                                    <span>ID: ${escapeHtml(item.product_id)}${sizeText}</span>
                                 </div>
                             </div>
                             <div style="text-align: right; display: flex; flex-direction: column; gap: 0.2rem; font-family: 'Outfit', sans-serif;">
@@ -566,10 +745,10 @@ async function viewOrderDetails(orderId) {
                                     x${item.quantity}
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                    Precio: ${priceText}
+                                    Precio: $${unitPrice.toFixed(2)}
                                 </div>
                                 <div style="font-size: 0.8rem; font-weight: 500; color: var(--success);">
-                                    Subtotal: ${subtotalText}
+                                    Subtotal: $${subtotal.toFixed(2)}
                                 </div>
                             </div>
                         </div>
@@ -581,15 +760,13 @@ async function viewOrderDetails(orderId) {
         // Configurar botón de chatear
         const btnChat = document.getElementById('btn-modal-chat');
         if (btnChat) {
-            // Limpiar teléfono por seguridad de URL
-            const cleanPhone = order.client_phone.replace(/[^\d]/g, '');
-            const message = `Hola ${order.client_name}, te contacto de *FOGÓN* con respecto a tu pedido *#${order.id}*...`;
+            const cleanPhone = String(order.client_phone || '').replace(/[^\d]/g, '');
+            const message = `¡Hola ${order.client_name}! Te contactamos de *FOGÓN Restaurante* con respecto a tu pedido *#${order.id}*...`;
             btnChat.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
         }
 
-        // Abrir modal
         orderModal.classList.add('active');
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     } catch (err) {
         console.error(err);
         showToast('Error al obtener los detalles del pedido.', 'error');
@@ -598,7 +775,7 @@ async function viewOrderDetails(orderId) {
 
 // Cerrar Modal
 function closeModal() {
-    orderModal.classList.remove('active');
+    if (orderModal) orderModal.classList.remove('active');
 }
 if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
 if (btnCloseModalFooter) btnCloseModalFooter.addEventListener('click', closeModal);
@@ -616,38 +793,23 @@ function openPaymentModal(orderId, newStatus) {
         paymentModalOrderId.textContent = `#${orderId}`;
     }
     
-    // Resetear opciones a valores iniciales
-    if (paymentMethodSelect) {
-        paymentMethodSelect.value = "Pago Móvil";
+    const targetOrder = ordersList.find(o => o.id === orderId);
+    const amountInput = document.getElementById('payment-amount');
+    if (amountInput && targetOrder) {
+        amountInput.value = parseFloat(targetOrder.total_price || 0).toFixed(2);
+    }
+
+    if (paymentMethodSelect && targetOrder?.payment_method) {
+        paymentMethodSelect.value = targetOrder.payment_method;
     }
     if (paymentReferenceInput) {
-        paymentReferenceInput.value = "";
+        paymentReferenceInput.value = targetOrder?.payment_reference || '';
     }
-    toggleReferenceField();
     
     if (paymentModal) {
         paymentModal.classList.add('active');
     }
-    lucide.createIcons();
-}
-
-function toggleReferenceField() {
-    if (!paymentMethodSelect) return;
-    const method = paymentMethodSelect.value;
-    if (method === "Pago Móvil" || method === "Transferencia") {
-        if (referenceGroup) referenceGroup.style.display = "block";
-        if (paymentReferenceInput) {
-            paymentReferenceInput.required = true;
-            paymentReferenceInput.setAttribute("required", "");
-        }
-    } else {
-        if (referenceGroup) referenceGroup.style.display = "none";
-        if (paymentReferenceInput) {
-            paymentReferenceInput.required = false;
-            paymentReferenceInput.removeAttribute("required");
-            paymentReferenceInput.value = "";
-        }
-    }
+    if (window.lucide) lucide.createIcons();
 }
 
 function closePaymentModal() {
@@ -656,11 +818,7 @@ function closePaymentModal() {
     }
     pendingPaymentOrderId = null;
     pendingPaymentStatus = null;
-    refreshAllData(); // Revierte el valor seleccionado en las tablas/dropdowns al valor actual en DB
-}
-
-if (paymentMethodSelect) {
-    paymentMethodSelect.addEventListener('change', toggleReferenceField);
+    refreshAllData();
 }
 
 if (btnClosePaymentModal) btnClosePaymentModal.addEventListener('click', closePaymentModal);
@@ -675,28 +833,19 @@ if (paymentForm) {
     paymentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const method = paymentMethodSelect ? paymentMethodSelect.value : "Pago Móvil";
-        let paymentMethodString = method;
-        
-        if (method === "Pago Móvil" || method === "Transferencia") {
-            const ref = paymentReferenceInput ? paymentReferenceInput.value.trim() : "";
-            if (!/^\d{4}$/.test(ref)) {
-                showToast("La referencia debe ser de exactamente 4 dígitos numéricos.", "warning");
-                return;
-            }
-            paymentMethodString = `${method} - Ref: ${ref}`;
-        }
+        const method = paymentMethodSelect ? paymentMethodSelect.value : "pago_movil";
+        const ref = paymentReferenceInput ? paymentReferenceInput.value.trim() : "";
+        const paymentMethodString = ref ? `${method} (Ref: ${ref})` : method;
         
         const orderId = pendingPaymentOrderId;
         const status = pendingPaymentStatus;
         
-        // Loader en el botón de confirmar
         const btnConfirm = document.getElementById('btn-confirm-payment');
         const originalHTML = btnConfirm ? btnConfirm.innerHTML : '';
         if (btnConfirm) {
             btnConfirm.disabled = true;
             btnConfirm.innerHTML = '<i data-lucide="loader" class="spin"></i> Procesando...';
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
         
         try {
@@ -708,9 +857,8 @@ if (paymentForm) {
 
             if (!response.ok) throw new Error('Error al actualizar estado');
             
-            showToast(`Pedido #${orderId} completado y pago registrado con éxito.`, 'success');
+            showToast(`Pedido #${orderId} completado y venta registrada.`, 'success');
             
-            // Cerrar el modal limpiando variables de estado
             if (paymentModal) {
                 paymentModal.classList.remove('active');
             }
@@ -725,46 +873,47 @@ if (paymentForm) {
             if (btnConfirm) {
                 btnConfirm.disabled = false;
                 btnConfirm.innerHTML = originalHTML;
-                lucide.createIcons();
+                if (window.lucide) lucide.createIcons();
             }
         }
     });
 }
 
-// --- GESTIÓN DE PRODUCTOS (CRUD INVENTARIO) ---
+// --- GESTIÓN DE PRODUCTOS (CRUD INVENTARIO / MENÚ) ---
 
 function renderProductsTable() {
     const tableProducts = document.getElementById('table-products');
     if (!tableProducts) return;
 
     if (productsList.length === 0) {
-        tableProducts.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">No hay productos en el catálogo. Crea uno nuevo.</td></tr>`;
+        tableProducts.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">No hay platos en el menú. Agrega uno nuevo.</td></tr>`;
         return;
     }
 
     tableProducts.innerHTML = productsList.map(p => {
         const sizesText = p.sizes || 'N/A';
-        const priceText = p.price > 0 ? `$${p.price.toFixed(2)}` : 'WhatsApp';
-        const statusText = p.active === 1 ? 'Activo' : 'Oculto';
+        const priceText = p.price > 0 ? `$${parseFloat(p.price).toFixed(2)}` : '$0.00';
+        const statusText = p.active === 1 ? 'Disponible' : 'Agotado';
         const statusClass = p.active === 1 ? 'completado' : 'cancelado';
+        const categoryLabel = p.category || p.type_id || 'general';
 
         return `
             <tr>
                 <td>
-                    <img src="${p.image_url}" alt="${p.name}" style="width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);">
+                    <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" style="width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);">
                 </td>
-                <td><code>${p.id}</code></td>
-                <td><strong>${p.name}</strong></td>
-                <td><span style="font-size:0.8rem; background:rgba(255,255,255,0.03); padding:0.25rem 0.5rem; border-radius:6px;">${p.category || 'general'}</span></td>
+                <td><code>${escapeHtml(p.id)}</code></td>
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td><span style="font-size:0.8rem; background:rgba(255,255,255,0.03); padding:0.25rem 0.5rem; border-radius:6px;">${escapeHtml(categoryLabel)}</span></td>
                 <td>${priceText}</td>
-                <td style="font-size:0.85rem; color:var(--text-secondary);">${sizesText}</td>
+                <td style="font-size:0.85rem; color:var(--text-secondary);">${escapeHtml(sizesText)}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>
                     <div style="display:flex; gap:0.5rem;">
-                        <button class="action-icon-btn edit" onclick="startEditProduct('${p.id}')" title="Editar Producto">
+                        <button class="action-icon-btn edit" onclick="startEditProduct('${escapeHtml(p.id)}')" title="Editar Plato">
                             <i data-lucide="edit-3" style="width:18px; height:18px;"></i>
                         </button>
-                        <button class="action-icon-btn delete" onclick="deleteProduct('${p.id}')" title="Eliminar Producto">
+                        <button class="action-icon-btn delete" onclick="deleteProduct('${escapeHtml(p.id)}')" title="Eliminar Plato">
                             <i data-lucide="trash-2" style="width:18px; height:18px;"></i>
                         </button>
                     </div>
@@ -773,7 +922,7 @@ function renderProductsTable() {
         `;
     }).join('');
 
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 }
 
 // Enviar formulario (Crear / Editar Producto)
@@ -781,46 +930,51 @@ if (productForm) {
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const method = document.getElementById('prod-method').value;
-        const id = document.getElementById('prod-id').value.trim();
-        const name = document.getElementById('prod-name').value.trim();
-        const category = document.getElementById('prod-category').value.trim();
-        const price = parseFloat(document.getElementById('prod-price').value) || 0.0;
-        const icon = document.getElementById('prod-icon').value.trim();
-        const image_url = document.getElementById('prod-image').value.trim();
-        const sizes = document.getElementById('prod-sizes').value.trim();
-        const active = parseInt(document.getElementById('prod-active').value);
+        const method = document.getElementById('prod-method')?.value || 'POST';
+        const id = document.getElementById('prod-id')?.value.trim();
+        const name = document.getElementById('prod-name')?.value.trim();
+        const category = document.getElementById('prod-category')?.value.trim();
+        const price = parseFloat(document.getElementById('prod-price')?.value) || 0.0;
+        const icon = document.getElementById('prod-icon')?.value.trim();
+        const image_url = document.getElementById('prod-image')?.value.trim();
+        const sizes = document.getElementById('prod-sizes')?.value.trim();
+        const active = parseInt(document.getElementById('prod-active')?.value) || 1;
+        const description = document.getElementById('prod-description')?.value.trim();
 
         const btnSave = document.getElementById('btn-submit-product');
-        btnSave.disabled = true;
-        btnSave.innerHTML = '<i data-lucide="loader" class="spin"></i> Guardando...';
-        lucide.createIcons();
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i data-lucide="loader" class="spin"></i> Guardando...';
+            if (window.lucide) lucide.createIcons();
+        }
 
         try {
             const response = await fetch('/api/products', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id, name, category, price, icon, image_url, sizes: sizes || null, active
+                    id, name, category, price, icon, image_url, sizes: sizes || null, active, description
                 })
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
-                showToast(data.message || 'Producto guardado.', 'success');
+                showToast(data.message || 'Platillo guardado exitosamente.', 'success');
                 resetProductForm();
                 refreshAllData();
             } else {
-                showToast(data.error || 'Error al guardar el producto.', 'error');
+                showToast(data.error || 'Error al guardar el plato.', 'error');
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de red al guardar producto.', 'error');
+            showToast('Error de red al guardar plato.', 'error');
         } finally {
-            btnSave.disabled = false;
-            btnSave.innerHTML = '<i data-lucide="plus-circle"></i> Guardar Producto';
-            lucide.createIcons();
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i data-lucide="plus-circle"></i> Guardar Plato';
+                if (window.lucide) lucide.createIcons();
+            }
         }
     });
 }
@@ -830,34 +984,42 @@ function startEditProduct(productId) {
     const product = productsList.find(p => p.id === productId);
     if (!product) return;
 
-    // Rellenar campos del formulario
-    document.getElementById('prod-method').value = 'PUT';
-    document.getElementById('prod-id').value = product.id;
-    document.getElementById('prod-id').disabled = true; // El slug/ID no se puede cambiar
-    document.getElementById('prod-name').value = product.name;
-    document.getElementById('prod-category').value = product.category || '';
-    document.getElementById('prod-price').value = product.price;
-    document.getElementById('prod-icon').value = product.icon || '';
-    document.getElementById('prod-image').value = product.image_url;
-    document.getElementById('prod-sizes').value = product.sizes || '';
-    document.getElementById('prod-active').value = product.active;
+    const methodEl = document.getElementById('prod-method');
+    const idEl = document.getElementById('prod-id');
+    const nameEl = document.getElementById('prod-name');
+    const categoryEl = document.getElementById('prod-category');
+    const priceEl = document.getElementById('prod-price');
+    const iconEl = document.getElementById('prod-icon');
+    const imageEl = document.getElementById('prod-image');
+    const sizesEl = document.getElementById('prod-sizes');
+    const activeEl = document.getElementById('prod-active');
+    const descEl = document.getElementById('prod-description');
 
-    // Cambiar estética de edición
-    formProductTitle.textContent = `Editando Producto: ${product.name}`;
-    btnSubmitProduct.innerHTML = '<i data-lucide="save"></i> Actualizar Producto';
-    btnCancelEdit.style.display = 'inline-flex';
+    if (methodEl) methodEl.value = 'PUT';
+    if (idEl) {
+        idEl.value = product.id;
+        idEl.disabled = true;
+    }
+    if (nameEl) nameEl.value = product.name;
+    if (categoryEl) categoryEl.value = product.category || product.type_id || 'principales';
+    if (priceEl) priceEl.value = product.price;
+    if (iconEl) iconEl.value = product.icon || '';
+    if (imageEl) imageEl.value = product.image_url;
+    if (sizesEl) sizesEl.value = product.sizes || '';
+    if (activeEl) activeEl.value = product.active !== undefined ? product.active : 1;
+    if (descEl) descEl.value = product.description || '';
+
+    if (formProductTitle) formProductTitle.textContent = `Editando Plato: ${product.name}`;
+    if (btnSubmitProduct) btnSubmitProduct.innerHTML = '<i data-lucide="save"></i> Actualizar Plato';
+    if (btnCancelEdit) btnCancelEdit.style.display = 'inline-flex';
     
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
-    // Expandir formulario si está colapsado al querer editar
     const collapseEl = document.getElementById('product-form-collapse');
-    const collapseIcon = document.getElementById('product-form-icon');
     if (collapseEl && !collapseEl.classList.contains('expanded')) {
         collapseEl.classList.add('expanded');
-        if (collapseIcon) collapseIcon.style.transform = 'rotate(180deg)';
     }
 
-    // Hacer scroll suave hacia el título del formulario (Editando Producto)
     if (formProductTitle) {
         formProductTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -865,20 +1027,19 @@ function startEditProduct(productId) {
 
 // Cancelar Edición
 function resetProductForm() {
-    productForm.reset();
-    document.getElementById('prod-method').value = 'POST';
-    document.getElementById('prod-id').disabled = false;
-    formProductTitle.textContent = 'Registrar Nuevo Producto';
-    btnSubmitProduct.innerHTML = '<i data-lucide="plus-circle"></i> Guardar Producto';
-    btnCancelEdit.style.display = 'none';
-    lucide.createIcons();
+    if (productForm) productForm.reset();
+    const methodEl = document.getElementById('prod-method');
+    const idEl = document.getElementById('prod-id');
+    if (methodEl) methodEl.value = 'POST';
+    if (idEl) idEl.disabled = false;
+    if (formProductTitle) formProductTitle.textContent = 'Añadir Nuevo Plato';
+    if (btnSubmitProduct) btnSubmitProduct.innerHTML = '<i data-lucide="plus-circle"></i> Guardar Plato';
+    if (btnCancelEdit) btnCancelEdit.style.display = 'none';
+    if (window.lucide) lucide.createIcons();
 
-    // Colapsar formulario de nuevo
     const collapseEl = document.getElementById('product-form-collapse');
-    const collapseIcon = document.getElementById('product-form-icon');
     if (collapseEl && collapseEl.classList.contains('expanded')) {
         collapseEl.classList.remove('expanded');
-        if (collapseIcon) collapseIcon.style.transform = 'rotate(0deg)';
     }
 }
 
@@ -886,23 +1047,36 @@ if (btnCancelEdit) btnCancelEdit.addEventListener('click', resetProductForm);
 
 // Eliminar un producto
 async function deleteProduct(productId) {
-    if (!confirm(`¿Estás completamente seguro de eliminar "${productId}" del catálogo? Se borrará permanentemente de la base de datos.`)) {
+    if (!confirm(`¿Estás completamente seguro de eliminar "${productId}" del menú? Se borrará permanentemente de la base de datos.`)) {
         return;
     }
 
     try {
-        const response = await fetch(`/api/products?id=${productId}`, {
+        const response = await fetch(`/api/products?id=${encodeURIComponent(productId)}`, {
             method: 'DELETE'
         });
 
         if (!response.ok) throw new Error('Error al eliminar');
 
-        showToast('Producto eliminado permanentemente del catálogo.', 'info');
+        showToast('Platillo eliminado del menú.', 'info');
         refreshAllData();
     } catch (err) {
         console.error(err);
-        showToast('Error al intentar eliminar el producto.', 'error');
+        showToast('Error al intentar eliminar el platillo.', 'error');
     }
+}
+
+// Botón Nuevo Plato (Toggle formulario)
+if (btnToggleProductForm) {
+    btnToggleProductForm.addEventListener('click', () => {
+        const collapseEl = document.getElementById('product-form-collapse');
+        if (collapseEl) {
+            collapseEl.classList.toggle('expanded');
+            if (collapseEl.classList.contains('expanded')) {
+                document.getElementById('prod-id')?.focus();
+            }
+        }
+    });
 }
 
 // --- BOTONES DE ACTUALIZACIÓN EN VIVO ---
@@ -922,7 +1096,7 @@ if (btnRefreshProducts) {
     btnRefreshProducts.addEventListener('click', () => {
         btnRefreshProducts.classList.add('spin');
         loadProducts().then(() => {
-            showToast('Catálogo sincronizado.', 'success');
+            showToast('Menú sincronizado.', 'success');
             btnRefreshProducts.classList.remove('spin');
         });
     });
@@ -942,21 +1116,7 @@ if (btnRefreshSales) {
 window.addEventListener('DOMContentLoaded', () => {
     checkSession();
     
-    // Inicializar lógica de colapsado de formulario de productos
-    const productFormHeader = document.getElementById('product-form-header');
-    const productFormCollapse = document.getElementById('product-form-collapse');
-    const productFormIcon = document.getElementById('product-form-icon');
-    
-    if (productFormHeader && productFormCollapse) {
-        productFormHeader.addEventListener('click', () => {
-            const isExpanded = productFormCollapse.classList.toggle('expanded');
-            if (productFormIcon) {
-                productFormIcon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
-            }
-        });
-    }
-    
-    // Inicializar lógica de Sidebar colapsable en móvil y tablet
+    // Sidebar colapsable en móvil
     const sidebar = document.querySelector('.sidebar');
     const btnSidebarToggle = document.getElementById('btn-sidebar-toggle');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -972,7 +1132,6 @@ window.addEventListener('DOMContentLoaded', () => {
             sidebarOverlay.classList.remove('active');
         });
         
-        // Cerrar sidebar automáticamente al navegar a otra sección en pantallas móviles
         const sidebarMenuLinks = document.querySelectorAll('.sidebar-link');
         sidebarMenuLinks.forEach(link => {
             link.addEventListener('click', () => {
@@ -991,3 +1150,91 @@ window.deleteOrder = deleteOrder;
 window.viewOrderDetails = viewOrderDetails;
 window.startEditProduct = startEditProduct;
 window.deleteProduct = deleteProduct;
+window.checkSession = checkSession;
+
+// --- GESTIÓN DE TASA BCV ---
+const bcvModal = document.getElementById('bcv-modal');
+const btnOpenBcvModal = document.getElementById('btn-open-bcv-modal');
+const btnCloseBcvModal = document.getElementById('btn-close-bcv-modal');
+const btnCancelBcv = document.getElementById('btn-cancel-bcv');
+const bcvForm = document.getElementById('bcv-form');
+
+function openBcvModal() {
+    if (bcvModal) bcvModal.classList.add('active');
+    const input = document.getElementById('bcv-rate-input');
+    if (input) input.value = currentBcvRate.toFixed(2);
+    const toggle = document.getElementById('bcv-auto-toggle');
+    if (toggle) toggle.checked = currentBcvAuto;
+}
+function closeBcvModal() {
+    if (bcvModal) bcvModal.classList.remove('active');
+}
+
+if (btnOpenBcvModal) btnOpenBcvModal.addEventListener('click', openBcvModal);
+if (btnCloseBcvModal) btnCloseBcvModal.addEventListener('click', closeBcvModal);
+if (btnCancelBcv) btnCancelBcv.addEventListener('click', closeBcvModal);
+if (bcvModal) {
+    bcvModal.addEventListener('click', (e) => {
+        if (e.target === bcvModal) closeBcvModal();
+    });
+}
+
+if (bcvForm) {
+    bcvForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rateInput = document.getElementById('bcv-rate-input');
+        const autoToggle = document.getElementById('bcv-auto-toggle');
+        const newRate = parseFloat(rateInput?.value);
+        const autoUpdate = autoToggle ? autoToggle.checked : true;
+
+        if (!newRate || newRate <= 0) {
+            showToast('Por favor introduce una tasa válida.', 'warning');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/bcv', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rate: newRate, autoUpdate })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast('✅ Tasa BCV actualizada correctamente.', 'success');
+                currentBcvRate = newRate;
+                currentBcvAuto = autoUpdate;
+                const display = document.getElementById('admin-bcv-val');
+                if (display) display.textContent = `${newRate.toFixed(2)} Bs.`;
+                closeBcvModal();
+            } else {
+                showToast(data.error || 'Error al actualizar tasa BCV.', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión al guardar tasa.', 'error');
+        }
+    });
+}
+
+// --- GESTIÓN DE VISOR DE COMPROBANTES ---
+const receiptModal = document.getElementById('receipt-modal');
+const btnViewReceiptModal = document.getElementById('btn-view-receipt-modal');
+const modalReceiptThumb = document.getElementById('modal-receipt-thumb');
+const btnCloseReceiptModal = document.getElementById('btn-close-receipt-modal');
+const btnCloseReceiptFooter = document.getElementById('btn-close-receipt-footer');
+
+function openReceiptModal() {
+    if (receiptModal) receiptModal.classList.add('active');
+}
+function closeReceiptModal() {
+    if (receiptModal) receiptModal.classList.remove('active');
+}
+
+if (btnViewReceiptModal) btnViewReceiptModal.addEventListener('click', openReceiptModal);
+if (modalReceiptThumb) modalReceiptThumb.addEventListener('click', openReceiptModal);
+if (btnCloseReceiptModal) btnCloseReceiptModal.addEventListener('click', closeReceiptModal);
+if (btnCloseReceiptFooter) btnCloseReceiptFooter.addEventListener('click', closeReceiptModal);
+if (receiptModal) {
+    receiptModal.addEventListener('click', (e) => {
+        if (e.target === receiptModal) closeReceiptModal();
+    });
+}

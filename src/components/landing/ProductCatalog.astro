@@ -5,162 +5,564 @@
 
 <!-- Filtros de Categorías -->
 <section id="menu">
-  <div class="container">
-    <div class="section-header reveal">
-      <h2>Nuestro <span>Menú</span></h2>
-      <p>Cada plato, preparado con amor y sazón de verdad. Entradas, platos principales, combos, postres y bebidas para toda la familia.</p>
-    </div>
-    <div class="search-container reveal" style="margin: 0 auto 2rem; max-width: 500px; padding: 0 1rem;">
-      <div style="position: relative;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-light);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="product-search" placeholder="Buscar platillos (ej. pabellón, pollo, combo...)" style="width: 100%; padding: 0.9rem 3.2rem 0.9rem 3.2rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 50px; font-size: 1rem; outline: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-family: 'Outfit', sans-serif;">
-        <button id="clear-search" aria-label="Limpiar búsqueda" style="position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); display: none; background: none; border: none; cursor: pointer; color: var(--text-light); padding: 0; align-items: center; justify-content: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-    </div>
+    <div class="container">
+        <div class="section-header reveal">
+            <h2>
+                Nuestro <span>Menú</span>
+            </h2>
+            <p>
+                Cada plato, preparado con amor y sazón de verdad. Entradas,
+                platos principales, combos, postres y bebidas para toda la
+                familia.
+            </p>
+        </div>
+        <div
+            class="search-container reveal"
+            style="margin: 0 auto 2rem; max-width: 500px; padding: 0 1rem;"
+        >
+            <div style="position: relative;">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-light);"
+                >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                    type="text"
+                    id="product-search"
+                    placeholder="Buscar platillos (ej. pabellón, pollo, combo...)"
+                    style="width: 100%; padding: 0.9rem 3.2rem 0.9rem 3.2rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 50px; font-size: 1rem; outline: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-family: 'Outfit', sans-serif;"
+                />
+                <button
+                    id="clear-search"
+                    aria-label="Limpiar búsqueda"
+                    style="position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); display: none; background: none; border: none; cursor: pointer; color: var(--text-light); padding: 0; align-items: center; justify-content: center;"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </div>
 
-    <div class="category-filters-container reveal" style="margin-bottom: 2.5rem; display: flex; justify-content: center;">
-      <div class="category-filters" id="category-filters" style="display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;">
-        <!-- Se cargará dinámicamente con JavaScript -->
-      </div>
-    </div>
+        <div
+            class="category-filters-container reveal"
+            style="margin-bottom: 2.5rem; display: flex; justify-content: center;"
+        >
+            <div
+                class="category-filters"
+                id="category-filters"
+                style="display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;"
+            >
+                <!-- Se cargará dinámicamente con JavaScript -->
+            </div>
+        </div>
 
-    <div class="product-grid" id="catalog-container">
-      <!-- Loading state -->
-      <div class="loading-catalog" style="grid-column: 1/-1; text-align: center; padding: 3rem 0; color: var(--text-secondary);">
-        <svg xmlns="http://www.w3.org/2000/svg" class="spin" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-        <p>Cargando colección...</p>
-      </div>
+        <div class="product-grid" id="catalog-container">
+            <!-- Loading state -->
+            <div
+                class="loading-catalog"
+                style="grid-column: 1/-1; text-align: center; padding: 3rem 0; color: var(--text-secondary);"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="spin"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="margin-bottom: 1rem;"
+                >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                <p>Cargando menú...</p>
+            </div>
+        </div>
+
+        <div
+            id="load-more-container"
+            style="text-align: center; margin-top: 3rem; display: none;"
+        >
+            <button id="load-more-btn" class="btn-outline-dark">
+                Ver Más Productos
+            </button>
+        </div>
     </div>
-    
-    <div id="load-more-container" style="text-align: center; margin-top: 3rem; display: none;">
-      <button id="load-more-btn" class="btn-outline-dark">Ver Más Productos</button>
-    </div>
-  </div>
 </section>
 
 <!-- Cart Drawer -->
 <div id="cart-overlay" class="cart-overlay"></div>
 <div id="cart-drawer" class="cart-drawer">
-  <div class="cart-header">
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <button id="cart-back-btn" aria-label="Volver" style="display: none; background: rgba(255,255,255,0.15); border: none; cursor: pointer; color: var(--white); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <h3 id="cart-title" style="margin: 0;">🛒 Tu Pedido</h3>
+    <div class="cart-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button
+                id="cart-back-btn"
+                aria-label="Volver"
+                style="display: none; background: rgba(255,255,255,0.15); border: none; cursor: pointer; color: var(--white); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition);"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="m15 18-6-6 6-6" />
+                </svg>
+            </button>
+            <h3 id="cart-title" style="margin: 0;">
+                🛒 Tu Pedido
+            </h3>
+        </div>
+        <div class="cart-header-actions">
+            <button
+                id="clear-cart"
+                class="clear-cart-btn"
+                title="Vaciar Carrito"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                </svg>
+            </button>
+            <button id="close-cart" aria-label="Cerrar carrito">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
     </div>
-    <div class="cart-header-actions">
-      <button id="clear-cart" class="clear-cart-btn" title="Vaciar Carrito">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-      </button>
-      <button id="close-cart" aria-label="Cerrar carrito">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-  <div id="cart-step-1" class="cart-step active" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-    <div id="cart-items" class="cart-items" style="flex: 1; overflow-y: auto;">
-      <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
-    </div>
-  </div>
-
-  <div id="cart-step-2" class="cart-step" style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;">
-    <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Datos de Contacto
-    </h4>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-      <div style="flex: 1; min-width: 200px;">
-        <label for="client-name" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Nombre Completo</label>
-        <input type="text" id="client-name" placeholder="Ej. María González" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
-      </div>
-      <div style="flex: 1; min-width: 200px;">
-        <label for="client-phone" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Teléfono / WhatsApp</label>
-        <input type="tel" id="client-phone" placeholder="Ej. +58 412-4756191" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
-      </div>
-    </div>
-    
-    <div style="width: 100%; margin-top: 1.2rem;">
-      <label style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;">Opciones de Entrega</label>
-      <div style="display: flex; gap: 1.5rem;">
-        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
-          <input type="radio" name="delivery-type" value="retiro" checked style="accent-color: var(--accent);"> 🏪 Retiro en local
-        </label>
-        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
-          <input type="radio" name="delivery-type" value="delivery" style="accent-color: var(--accent);"> 🛵 Delivery (+$5)
-        </label>
-      </div>
-    </div>
-    
-    <div id="delivery-address-container" style="width: 100%; margin-top: 1rem; display: none;">
-      <label for="delivery-address" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Dirección de Entrega</label>
-      <input type="text" id="delivery-address" placeholder="Ej. Calle 5, Res. Los Mangos, Apto 4" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
-    </div>
-  </div>
-
-  <div id="cart-step-3" class="cart-step" style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;">
-    <div style="width: 100%;">
-      <label for="payment-method" style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;">Método de Pago</label>
-      <select id="payment-method" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s; appearance: auto;">
-        <option value="" disabled selected>Selecciona un método...</option>
-        <option value="pago_movil">📱 Pago Móvil</option>
-        <option value="zelle">🇺🇸 Zelle</option>
-        <option value="efectivo">💵 Efectivo (Divisas / Bs)</option>
-        <option value="punto">💳 Punto de Venta (Sólo Retiro)</option>
-      </select>
-    </div>
-
-    <!-- Payment info panels -->
-    <div id="payment-info-pago-movil" style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);">
-      <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">Datos para Pago Móvil:</p>
-      <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
-        <li><strong>Banco:</strong> Banesco (0134)</li>
-        <li><strong>Teléfono:</strong> 0414-1234567</li>
-        <li><strong>C.I:</strong> V-12345678</li>
-      </ul>
-    </div>
-    
-    <div id="payment-info-zelle" style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);">
-      <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">Datos para Zelle:</p>
-      <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
-        <li><strong>Correo:</strong> pagos@fogon.com</li>
-        <li><strong>Titular:</strong> Fogon LLC</li>
-      </ul>
+    <div
+        id="cart-step-1"
+        class="cart-step active"
+        style="display: flex; flex-direction: column; flex: 1; overflow: hidden;"
+    >
+        <div
+            id="cart-items"
+            class="cart-items"
+            style="flex: 1; overflow-y: auto;"
+        >
+            <div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>
+        </div>
     </div>
 
-    <div id="payment-reference-container" style="display: none; width: 100%; margin-top: 1rem;">
-      <label for="payment-reference" style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;">Número de Referencia</label>
-      <input type="text" id="payment-reference" placeholder="Ej. 123456" style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;">
+    <div
+        id="cart-step-2"
+        class="cart-step"
+        style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;"
+    >
+        <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--accent)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+            </svg>
+            Datos de Contacto
+        </h4>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label
+                    for="client-name"
+                    style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;"
+                >
+                    Nombre Completo
+                </label>
+                <input
+                    type="text"
+                    id="client-name"
+                    placeholder="Ej. María González"
+                    maxlength="100"
+                    style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;"
+                />
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label
+                    for="client-phone"
+                    style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;"
+                >
+                    Teléfono / WhatsApp
+                </label>
+                <input
+                    type="tel"
+                    id="client-phone"
+                    placeholder="Ej. +58 412-4756191"
+                    maxlength="30"
+                    style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;"
+                />
+            </div>
+        </div>
+
+        <div style="width: 100%; margin-top: 1.2rem;">
+            <label style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;">
+                Opciones de Entrega
+            </label>
+            <div style="display: flex; gap: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
+                    <input
+                        type="radio"
+                        name="delivery-type"
+                        value="retiro"
+                        checked
+                        style="accent-color: var(--accent);"
+                    />{" "}
+                    🏪 Retiro en local
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dark);">
+                    <input
+                        type="radio"
+                        name="delivery-type"
+                        value="delivery"
+                        style="accent-color: var(--accent);"
+                    />{" "}
+                    🛵 Delivery (+$5)
+                </label>
+            </div>
+        </div>
+
+        <div
+            id="delivery-address-container"
+            style="width: 100%; margin-top: 1rem; display: none;"
+        >
+            <label
+                for="delivery-address"
+                style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;"
+            >
+                Dirección de Entrega
+            </label>
+            <input
+                type="text"
+                id="delivery-address"
+                placeholder="Ej. Calle 5, Res. Los Mangos, Apto 4"
+                maxlength="300"
+                style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;"
+            />
+        </div>
     </div>
-  </div>
 
-  <div id="cart-total-fixed" style="display: none; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.06); font-weight: bold; font-size: 1.2rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); z-index: 10;">
-    <span>Total:</span>
-    <span id="cart-total-amount" style="color: var(--accent);">$0.00</span>
-  </div>
+    <div
+        id="cart-step-3"
+        class="cart-step"
+        style="display: none; flex-direction: column; flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; background: rgba(0,0,0,0.015); scrollbar-width: thin; scrollbar-color: var(--rose-light) transparent;"
+    >
+        <div style="width: 100%;">
+            <label
+                for="payment-method"
+                style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--text-light); font-weight: 600;"
+            >
+                Método de Pago
+            </label>
+            <select
+                id="payment-method"
+                style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s; appearance: auto;"
+            >
+                <option value="" disabled selected>
+                    Selecciona un método...
+                </option>
+                <option value="pago_movil">📱 Pago Móvil</option>
+                <option value="zelle">🇺🇸 Zelle</option>
+                <option value="efectivo">💵 Efectivo (Divisas / Bs)</option>
+                <option value="punto">💳 Punto de Venta (Sólo Retiro)</option>
+            </select>
+        </div>
 
-  <div class="cart-footer">
-    <button id="cart-next-btn" class="cta-btn" disabled style="width: 100%; margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 0.5rem; align-items: center;">
-      Continuar (Datos) 
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
-    <button id="whatsapp-order-btn" class="cta-btn whatsapp-btn" style="display: none;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Enviar Pedido por WhatsApp
-    </button>
-  </div>
+        <!-- Payment info panels -->
+        <div
+            id="payment-info-pago-movil"
+            style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"
+        >
+            <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">
+                Datos para Pago Móvil:
+            </p>
+            <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
+                <li>
+                    <strong>Banco:</strong> Banesco (0134)
+                </li>
+                <li>
+                    <strong>Teléfono:</strong> 0412-4756191
+                </li>
+                <li>
+                    <strong>C.I:</strong> V-12345678
+                </li>
+            </ul>
+            <div style="margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.2rem;">
+                <div>
+                    <span style="color: var(--text-dark); font-weight: 600;">Monto Exacto a Transferir:</span>
+                    <strong id="pago-movil-bs-amount" style="color: var(--accent); margin-left: 0.3rem; font-size: 0.95rem;">Bs. 0,00</strong>
+                </div>
+                <span style="font-size: 0.72rem; color: var(--text-light);">
+                    Calculado con Tasa Oficial BCV: <strong class="bcv-rate-text">--</strong> Bs/$
+                </span>
+            </div>
+        </div>
+
+        <div
+            id="payment-info-zelle"
+            style="display: none; width: 100%; margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"
+        >
+            <p style="margin:0 0 0.4rem 0; font-weight:600; color:var(--text-dark);">
+                Datos para Zelle:
+            </p>
+            <ul style="margin:0; padding-left:1.2rem; color:var(--text-light);">
+                <li>
+                    <strong>Correo:</strong> pagos@fogon.com
+                </li>
+                <li>
+                    <strong>Titular:</strong> Fogon Restaurante
+                </li>
+            </ul>
+        </div>
+
+        <div
+            id="payment-reference-container"
+            style="display: none; width: 100%; margin-top: 1rem;"
+        >
+            <label
+                for="payment-reference"
+                style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;"
+            >
+                Número de Referencia
+            </label>
+            <input
+                type="text"
+                id="payment-reference"
+                placeholder="Ej. 123456"
+                maxlength="100"
+                style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; background: #fff; color: var(--text-dark); outline: none; font-size: 0.9rem; transition: border-color 0.2s;"
+            />
+        </div>
+
+        <!-- Carga de Comprobante de Pago -->
+        <div
+            id="payment-receipt-container"
+            style="display: none; width: 100%; margin-top: 1rem;"
+        >
+            <label
+                style="display: block; font-size: 0.75rem; margin-bottom: 0.3rem; color: var(--text-light); font-weight: 600;"
+            >
+                📸 Comprobante de Pago (Captura o Foto)
+            </label>
+            <div
+                id="receipt-dropzone"
+                style="border: 2px dashed rgba(201, 116, 138, 0.4); border-radius: 10px; padding: 0.8rem; text-align: center; cursor: pointer; background: rgba(201, 116, 138, 0.04); transition: all 0.2s ease;"
+            >
+                <input
+                    type="file"
+                    id="payment-receipt-file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style="display: none;"
+                />
+                <div id="receipt-prompt">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        style="color: var(--primary); margin: 0 auto 0.3rem;"
+                    >
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    <p style="font-size: 0.8rem; font-weight: 600; margin: 0; color: var(--text-dark);">
+                        Subir captura del comprobante
+                    </p>
+                    <span style="font-size: 0.7rem; color: var(--text-light);">
+                        JPG, PNG, WebP (Optimizado automáticamente)
+                    </span>
+                </div>
+                <div
+                    id="receipt-preview-box"
+                    style="display: none; align-items: center; justify-content: space-between; gap: 0.6rem;"
+                >
+                    <div style="display: flex; align-items: center; gap: 0.6rem; overflow: hidden;">
+                        <img
+                            id="receipt-preview-img"
+                            src=""
+                            alt="Comprobante"
+                            style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(0,0,0,0.1);"
+                        />
+                        <div style="text-align: left; overflow: hidden;">
+                            <span
+                                id="receipt-preview-name"
+                                style="font-size: 0.78rem; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;"
+                            >
+                                comprobante.jpg
+                            </span>
+                            <span style="font-size: 0.7rem; color: var(--success); font-weight: 500;">
+                                ✓ Adjunto con éxito
+                            </span>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        id="btn-remove-receipt"
+                        style="background: rgba(239,68,68,0.12); color: #ef4444; border: none; border-radius: 6px; padding: 0.35rem 0.55rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;"
+                    >
+                        Quitar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        id="cart-total-fixed"
+        style="display: none; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.06); font-weight: bold; font-size: 1.2rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); z-index: 10;"
+    >
+        <span>Total:</span>
+        <div style="text-align: right;">
+            <div id="cart-total-amount" style="color: var(--accent); line-height: 1.2;">
+                $0.00
+            </div>
+            <div id="cart-total-bs" style="font-size: 0.82rem; font-weight: 600; color: var(--text-light); margin-top: 2px;">
+                ≈ Bs. 0,00
+            </div>
+        </div>
+    </div>
+
+    <div class="cart-footer">
+        <button
+            id="cart-next-btn"
+            class="cta-btn"
+            disabled
+            style="width: 100%; margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 0.5rem; align-items: center;"
+        >
+            Continuar (Datos)
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="m9 18 6-6-6-6" />
+            </svg>
+        </button>
+        <button
+            id="whatsapp-order-btn"
+            class="cta-btn whatsapp-btn"
+            style="display: none;"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="display:inline; margin-right:6px;"
+            >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            Enviar Pedido por WhatsApp
+        </button>
+    </div>
 </div>
 
 <!-- Floating Cart -->
 <button id="cart-btn" class="float-cart" aria-label="Ver carrito">
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-  <span id="cart-count">0</span>
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+        <path d="M3 6h18" />
+        <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+    <span id="cart-count">0</span>
 </button>
 
 <!-- Floating WhatsApp -->
-<a href="https://wa.me/584124756191?text=Hola!%20Vengo%20de%20la%20web%20de%20FOG%C3%93N%20y%20quiero%20ver%20el%20cat%C3%A1logo" class="float-wa" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
-  <svg viewBox="0 0 24 24" width="35" height="35" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+<a
+    href="https://wa.me/584124756191?text=Hola!%20Vengo%20de%20la%20web%20de%20FOG%C3%93N%20y%20quiero%20ver%20el%20cat%C3%A1logo"
+    class="float-wa"
+    target="_blank"
+    rel="noopener"
+    aria-label="Contactar por WhatsApp"
+>
+    <svg viewBox="0 0 24 24" width="35" height="35" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
 </a>
 
 <!-- Toast Container -->
@@ -168,489 +570,777 @@
 
 <!-- Confirm Modal -->
 <div id="confirm-modal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    <div class="modal-content">
+        <div class="modal-icon">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+            </svg>
+        </div>
+        <h3>¿Vaciar Bolso?</h3>
+        <p>
+            Se eliminarán todos los artículos de tu pedido actual. Esta acción
+            no se puede deshacer.
+        </p>
+        <div class="modal-actions">
+            <button id="modal-cancel" class="modal-btn secondary">
+                Cancelar
+            </button>
+            <button id="modal-confirm" class="modal-btn danger">
+                Vaciar Pedido
+            </button>
+        </div>
     </div>
-    <h3>¿Vaciar Bolso?</h3>
-    <p>Se eliminarán todos los artículos de tu pedido actual. Esta acción no se puede deshacer.</p>
-    <div class="modal-actions">
-      <button id="modal-cancel" class="modal-btn secondary">Cancelar</button>
-      <button id="modal-confirm" class="modal-btn danger">Vaciar Pedido</button>
-    </div>
-  </div>
 </div>
 
 <script>
-// ============================================================
-// Fogon — Catálogo + Carrito
-// ============================================================
+    // ============================================================
+    // FOGÓN — Catálogo + Carrito
+    // ============================================================
 
-const CONFIG = { WHATSAPP_NUMBER: '584124756191', DEFAULT_CURRENCY: '$' };
+    const CONFIG = { WHATSAPP_NUMBER: "584124756191", DEFAULT_CURRENCY: "$" };
 
-// --- SCROLL REVEAL ---
-const initReveal = () => {
-  const reveals = document.querySelectorAll<HTMLElement>('.reveal');
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('active');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  reveals.forEach(el => observer.observe(el));
-};
+    // --- SCROLL REVEAL ---
+    const initReveal = () => {
+        const reveals = document.querySelectorAll<HTMLElement>(".reveal");
+        const observer = new IntersectionObserver(
+            (entries, obs) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active");
+                        obs.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.15 },
+        );
+        reveals.forEach((el) => observer.observe(el));
+    };
 
-// --- TOAST ---
-const showToast = (message: string) => {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  container.innerHTML = '';
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>${message}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-};
+    // --- TOAST ---
+    const showToast = (message: string) => {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+        container.innerHTML = "";
+        const toast = document.createElement("div");
+        toast.className = "toast";
 
-// --- CART ---
-let cart: Array<{ key: string; name: string; price?: number; qty: number; icon: string; options: Record<string, string> }> =
-  JSON.parse(localStorage.getItem('fogon_cart') || '[]');
+        // Sanitizar texto para evitar XSS en toasts
+        const span = document.createElement("span");
+        span.textContent = message;
 
-const saveCart = () => localStorage.setItem('fogon_cart', JSON.stringify(cart));
+        toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+        toast.appendChild(span);
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    };
 
-const updateCartCount = () => {
-  const total = cart.reduce((s, i) => s + i.qty, 0);
-  const badge = document.getElementById('cart-count');
-  const btn = document.getElementById('cart-btn');
-  if (badge) badge.textContent = String(total);
-  if (btn) btn.classList.toggle('visible', total > 0);
-};
+    // --- CART ---
+    let cart: Array<{
+        id: string;
+        key: string;
+        name: string;
+        price?: number;
+        qty: number;
+        icon: string;
+        options: Record<string, string>;
+    }> = JSON.parse(localStorage.getItem("fogon_cart") || "[]");
 
-const renderCart = () => {
-  const container = document.getElementById('cart-items');
-  const form = document.getElementById('cart-customer-form') as HTMLElement;
-  const waBtn = document.getElementById('whatsapp-order-btn') as HTMLButtonElement;
-  const totalFixed = document.getElementById('cart-total-fixed') as HTMLElement;
-  const totalAmount = document.getElementById('cart-total-amount');
-  
-  if (!container) return;
+    const saveCart = () =>
+        localStorage.setItem("fogon_cart", JSON.stringify(cart));
 
-  const nextBtn = document.getElementById('cart-next-btn') as HTMLButtonElement;
-  
-  if (cart.length === 0) {
-    container.innerHTML = '<div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>';
-    if (waBtn) waBtn.disabled = true;
-    if (nextBtn) nextBtn.disabled = true;
-    if (totalFixed) totalFixed.style.display = 'none';
-    return;
-  }
+    const updateCartCount = () => {
+        const total = cart.reduce((s, i) => s + i.qty, 0);
+        const badge = document.getElementById("cart-count");
+        const btn = document.getElementById("cart-btn");
+        if (badge) badge.textContent = String(total);
+        if (btn) btn.classList.toggle("visible", total > 0);
+    };
 
-  if (waBtn) waBtn.disabled = false;
-  if (nextBtn) nextBtn.disabled = false;
+    const renderCart = () => {
+        const container = document.getElementById("cart-items");
+        const totalFixed = document.getElementById(
+            "cart-total-fixed",
+        ) as HTMLElement;
+        const totalAmount = document.getElementById("cart-total-amount");
 
-  const labels: Record<string, string> = { size: 'Tamaño', proteina: 'Proteína', punto: 'Punto', salsa: 'Salsa', finish: 'Acabado' };
+        if (!container) return;
 
-  container.innerHTML = cart.map(item => {
-    if (item.price === undefined) {
-      const prod = catalogProducts.find(p => p.name === item.name);
-      item.price = prod ? parseFloat(prod.price) : 0;
-    }
-    const sizeText = Object.entries(item.options || {})
-      .filter(([, v]) => v)
-      .map(([k, v]) => `<span class="cart-item-option">${labels[k] || k}: ${v}</span>`)
-      .join('');
-    return `
+        const nextBtn = document.getElementById(
+            "cart-next-btn",
+        ) as HTMLButtonElement;
+
+        if (cart.length === 0) {
+            container.innerHTML =
+                '<div class="empty-cart-msg">Tu pedido está vacío 🍽️</div>';
+            if (nextBtn) nextBtn.disabled = true;
+            if (totalFixed) totalFixed.style.display = "none";
+            return;
+        }
+
+        if (nextBtn) nextBtn.disabled = false;
+        if (totalFixed) totalFixed.style.display = "flex";
+
+        const labels: Record<string, string> = {
+            size: "Tamaño",
+            proteina: "Proteína",
+            punto: "Punto",
+            salsa: "Salsa",
+            cantidad: "Cantidad",
+        };
+
+        container.innerHTML = cart
+            .map((item) => {
+                const opts = Object.entries(item.options || {})
+                    .filter(([, v]) => v)
+                    .map(
+                        ([k, v]) =>
+                            `<span class="cart-item-option">${labels[k] || k}: ${v}</span>`,
+                    )
+                    .join("");
+                const unitPrice =
+                    item.price && item.price > 0
+                        ? `$${item.price.toFixed(2)}`
+                        : "A consultar";
+                const subtotal =
+                    item.price && item.price > 0
+                        ? `$${(item.price * item.qty).toFixed(2)}`
+                        : "A consultar";
+
+                return `
       <div class="cart-item">
-        <div class="item-info" style="flex:1; min-width:0; padding-right:1rem;">
-          <div class="item-details">
-            <h4 style="margin:0;">${item.name}</h4>
-            <div style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;">
-              ${sizeText}
-            </div>
-          </div>
+        <div class="cart-item-info">
+          <h4>${item.name}</h4>
+          ${opts ? `<div class="cart-item-options">${opts}</div>` : ""}
+          <div class="cart-item-price">${unitPrice} ${item.qty > 1 ? `<span style="font-size:0.8rem; color:var(--text-light); font-weight:normal;">(Subtotal: ${subtotal})</span>` : ""}</div>
         </div>
-        <div class="item-qty" style="flex-shrink:0;">
-          <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', -1)">-</button>
-          <span style="min-width: 1.2rem; text-align:center;">${item.qty}</span>
-          <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', 1)">+</button>
-          <button class="remove-item" onclick="window._cart.removeFromCart('${item.key}')" style="margin-left: 0.3rem;">
+        <div class="cart-item-actions">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', -1)">-</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" onclick="window._cart.updateQty('${item.key}', 1)">+</button>
+          </div>
+          <button class="cart-item-remove" onclick="window._cart.removeFromCart('${item.key}')" title="Eliminar plato">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           </button>
         </div>
-        <div class="item-price" style="flex-shrink:0; text-align:right; min-width:70px;">
-          <span style="font-weight: 600; color: var(--accent); font-size:1.05rem;">
-            $${item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar'}
-          </span>
-        </div>
-      </div>`;
-  }).join('');
+      </div>
+    `;
+            })
+            .join("");
 
-  const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
-  const deliveryType = deliveryTypeInput?.value || 'retiro';
-  const deliveryCost = deliveryType === 'delivery' ? 5 : 0;
-  
-  const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0) + deliveryCost;
-  
-  if (totalFixed) {
-    totalFixed.style.display = 'flex';
-    if (totalAmount) {
-      totalAmount.innerHTML = deliveryCost > 0 
-        ? `$${totalPrice.toFixed(2)} <span style="font-size:0.75rem; font-weight:normal; color:var(--text-light); margin-left:4px;">(Incl. $5 Delivery)</span>` 
-        : `$${totalPrice.toFixed(2)}`;
-    }
-  }
-};
+        if (totalAmount) {
+            const deliveryTypeInput = document.querySelector(
+                'input[name="delivery-type"]:checked',
+            ) as HTMLInputElement;
+            const isDelivery = deliveryTypeInput?.value === "delivery";
+            const deliveryCost = isDelivery ? 5 : 0;
+            const itemsTotal = cart.reduce(
+                (s, i) => s + (i.price || 0) * i.qty,
+                0,
+            );
+            const totalPrice = itemsTotal + deliveryCost;
 
-let currentCartStep = 1;
+            const totalBs = totalPrice * currentBcvRate;
+            const totalBsEl = document.getElementById("cart-total-bs");
+            const pagoMovilBs = document.getElementById("pago-movil-bs-amount");
 
-const updateCartStepUI = () => {
-  const s1 = document.getElementById('cart-step-1');
-  const s2 = document.getElementById('cart-step-2');
-  const s3 = document.getElementById('cart-step-3');
-  if (s1) s1.style.display = currentCartStep === 1 ? 'flex' : 'none';
-  if (s2) s2.style.display = currentCartStep === 2 ? 'flex' : 'none';
-  if (s3) s3.style.display = currentCartStep === 3 ? 'flex' : 'none';
-  
-  const title = document.getElementById('cart-title');
-  const backBtn = document.getElementById('cart-back-btn');
-  const nextBtn = document.getElementById('cart-next-btn');
-  const waBtn = document.getElementById('whatsapp-order-btn');
-  
-  if (currentCartStep === 1) {
-    if (title) title.innerHTML = '🛒 Tu Pedido';
-    if (backBtn) backBtn.style.display = 'none';
-    if (nextBtn) { 
-      nextBtn.style.display = 'flex'; 
-      nextBtn.innerHTML = 'Continuar (Datos) <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>'; 
-    }
-    if (waBtn) waBtn.style.display = 'none';
-  } else if (currentCartStep === 2) {
-    if (title) title.innerHTML = '📦 Entrega';
-    if (backBtn) backBtn.style.display = 'flex';
-    if (nextBtn) { 
-      nextBtn.style.display = 'flex'; 
-      nextBtn.innerHTML = 'Continuar al Pago <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>'; 
-    }
-    if (waBtn) waBtn.style.display = 'none';
-  } else if (currentCartStep === 3) {
-    if (title) title.innerHTML = '💳 Pago';
-    if (backBtn) backBtn.style.display = 'flex';
-    if (nextBtn) nextBtn.style.display = 'none';
-    if (waBtn) waBtn.style.display = 'flex';
-  }
-};
+            if (itemsTotal === 0) {
+                totalAmount.textContent = "A consultar";
+                if (totalBsEl) totalBsEl.textContent = "";
+            } else {
+                totalAmount.innerHTML = isDelivery
+                    ? `${totalPrice.toFixed(2)} <span style="font-size:0.75rem; font-weight:normal; color:var(--text-light); margin-left:4px;">(Incl. $5 Delivery)</span>`
+                    : `${totalPrice.toFixed(2)}`;
+                if (totalBsEl) {
+                    totalBsEl.innerHTML = `≈ Bs. ${totalBs.toFixed(2)} <span style="font-size:0.7rem; font-weight:normal;">(BCV: ${currentBcvRate.toFixed(2)})</span>`;
+                }
+                if (pagoMovilBs) {
+                    pagoMovilBs.textContent = `Bs. ${totalBs.toFixed(2)}`;
+                }
+            }
+        }
+    };
 
-(window as any).goToStep = (step: number) => {
-  if (step === 2) {
-    if (cart.length === 0) return showToast('⚠️ Tu carrito está vacío');
-  }
-  if (step === 3) {
-    const nameInput = document.getElementById('client-name') as HTMLInputElement;
-    const phoneInput = document.getElementById('client-phone') as HTMLInputElement;
-    const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
-    const addressInput = document.getElementById('delivery-address') as HTMLInputElement;
-    
-    if (!nameInput?.value.trim() || !phoneInput?.value.trim()) {
-      showToast('⚠️ Ingresa tu nombre y teléfono.');
-      if (!nameInput?.value.trim()) nameInput?.focus(); else phoneInput?.focus();
-      return;
-    }
-    if (deliveryTypeInput?.value === 'delivery' && !addressInput?.value.trim()) {
-      showToast('⚠️ Ingresa tu dirección para el delivery.');
-      addressInput?.focus();
-      return;
-    }
-  }
-  currentCartStep = step;
-  updateCartStepUI();
-};
+    let currentCartStep = 1;
 
-const toggleCart = () => {
-  const drawer = document.getElementById('cart-drawer');
-  const overlay = document.getElementById('cart-overlay');
-  drawer?.classList.toggle('active');
-  overlay?.classList.toggle('active');
-  if (drawer?.classList.contains('active')) {
-    renderCart();
-    updateCartStepUI();
-  } else {
-    setTimeout(() => { currentCartStep = 1; updateCartStepUI(); }, 350);
-  }
-};
+    const updateCartStepUI = () => {
+        const s1 = document.getElementById("cart-step-1");
+        const s2 = document.getElementById("cart-step-2");
+        const s3 = document.getElementById("cart-step-3");
+        if (s1) s1.style.display = currentCartStep === 1 ? "flex" : "none";
+        if (s2) s2.style.display = currentCartStep === 2 ? "flex" : "none";
+        if (s3) s3.style.display = currentCartStep === 3 ? "flex" : "none";
 
-const removeFromCart = (key: string) => {
-  cart = cart.filter(i => i.key !== key);
-  saveCart(); renderCart(); updateCartCount();
-};
+        const title = document.getElementById("cart-title");
+        const backBtn = document.getElementById("cart-back-btn");
+        const nextBtn = document.getElementById("cart-next-btn");
+        const waBtn = document.getElementById("whatsapp-order-btn");
 
-const updateQty = (key: string, delta: number) => {
-  const item = cart.find(i => i.key === key);
-  if (!item) return;
-  item.qty += delta;
-  if (item.qty <= 0) removeFromCart(key);
-  else { saveCart(); renderCart(); updateCartCount(); }
-};
+        if (currentCartStep === 1) {
+            if (title) title.innerHTML = "🛒 Tu Pedido";
+            if (backBtn) backBtn.style.display = "none";
+            if (nextBtn) {
+                nextBtn.style.display = "flex";
+                nextBtn.innerHTML =
+                    'Continuar (Datos) <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+            }
+            if (waBtn) waBtn.style.display = "none";
+        } else if (currentCartStep === 2) {
+            if (title) title.innerHTML = "📦 Entrega";
+            if (backBtn) backBtn.style.display = "flex";
+            if (nextBtn) {
+                nextBtn.style.display = "flex";
+                nextBtn.innerHTML =
+                    'Continuar al Pago <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+            }
+            if (waBtn) waBtn.style.display = "none";
+        } else if (currentCartStep === 3) {
+            if (title) title.innerHTML = "💳 Pago";
+            if (backBtn) backBtn.style.display = "flex";
+            if (nextBtn) nextBtn.style.display = "none";
+            if (waBtn) waBtn.style.display = "flex";
+        }
+    };
 
-const addToCart = (id: string, name: string, price: number, qty = 1, icon = 'package', options: Record<string, string> = {}) => {
-  const optionsKey = Object.keys(options).sort().map(k => options[k]).join('-');
-  const itemKey = optionsKey ? `${id}-${optionsKey}` : id;
-  const existing = cart.find(i => i.key === itemKey);
-  if (existing) {
-    existing.qty += qty;
-    if (existing.price === undefined) existing.price = price;
-  } else {
-    cart.push({ key: itemKey, name, price, qty, icon, options });
-  }
-  saveCart();
-  updateCartCount();
-  const optList = Object.values(options).filter(Boolean);
-  showToast(`¡Añadido ${qty}x ${name}${optList.length ? ` (${optList.join(', ')})` : ''}!`);
-};
+    (window as any).goToStep = (step: number) => {
+        if (step === 2) {
+            if (cart.length === 0) return showToast("⚠️ Tu pedido está vacío");
+        }
+        if (step === 3) {
+            const nameInput = document.getElementById(
+                "client-name",
+            ) as HTMLInputElement;
+            const phoneInput = document.getElementById(
+                "client-phone",
+            ) as HTMLInputElement;
+            const deliveryTypeInput = document.querySelector(
+                'input[name="delivery-type"]:checked',
+            ) as HTMLInputElement;
+            const addressInput = document.getElementById(
+                "delivery-address",
+            ) as HTMLInputElement;
 
-// Exponer para onclick attrs en HTML dinámico
-(window as any)._cart = { updateQty, removeFromCart };
+            if (!nameInput?.value.trim() || !phoneInput?.value.trim()) {
+                showToast("⚠️ Ingresa tu nombre y teléfono.");
+                if (!nameInput?.value.trim()) nameInput?.focus();
+                else phoneInput?.focus();
+                return;
+            }
+            if (
+                deliveryTypeInput?.value === "delivery" &&
+                !addressInput?.value.trim()
+            ) {
+                showToast("⚠️ Ingresa la dirección para el delivery.");
+                addressInput?.focus();
+                return;
+            }
+        }
+        currentCartStep = step;
+        updateCartStepUI();
+    };
 
-// --- EVENTOS CARRITO ---
-document.getElementById('cart-btn')?.addEventListener('click', toggleCart);
-document.getElementById('close-cart')?.addEventListener('click', toggleCart);
-document.getElementById('cart-overlay')?.addEventListener('click', toggleCart);
+    const toggleCart = () => {
+        const drawer = document.getElementById("cart-drawer");
+        const overlay = document.getElementById("cart-overlay");
+        drawer?.classList.toggle("active");
+        overlay?.classList.toggle("active");
+        if (drawer?.classList.contains("active")) {
+            renderCart();
+            updateCartStepUI();
+        } else {
+            setTimeout(() => {
+                currentCartStep = 1;
+                updateCartStepUI();
+            }, 350);
+        }
+    };
 
-document.getElementById('cart-back-btn')?.addEventListener('click', () => {
-  if (currentCartStep > 1) (window as any).goToStep(currentCartStep - 1);
-});
+    const removeFromCart = (key: string) => {
+        cart = cart.filter((i) => i.key !== key);
+        saveCart();
+        renderCart();
+        updateCartCount();
+    };
 
-document.getElementById('cart-next-btn')?.addEventListener('click', () => {
-  if (currentCartStep < 3) (window as any).goToStep(currentCartStep + 1);
-});
+    const updateQty = (key: string, delta: number) => {
+        const item = cart.find((i) => i.key === key);
+        if (!item) return;
+        item.qty += delta;
+        if (item.qty <= 0) removeFromCart(key);
+        else {
+            saveCart();
+            renderCart();
+            updateCartCount();
+        }
+    };
 
-const confirmModal = document.getElementById('confirm-modal');
-document.getElementById('clear-cart')?.addEventListener('click', () => {
-  if (cart.length > 0) confirmModal?.classList.add('active');
-});
-document.getElementById('modal-cancel')?.addEventListener('click', () => confirmModal?.classList.remove('active'));
-confirmModal?.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.remove('active'); });
-document.getElementById('modal-confirm')?.addEventListener('click', () => {
-  cart = []; saveCart(); renderCart(); updateCartCount();
-  confirmModal?.classList.remove('active');
-  showToast('Bolso vaciado');
-});
+    const addToCart = (
+        id: string,
+        name: string,
+        price: number,
+        qty = 1,
+        icon = "package",
+        options: Record<string, string> = {},
+    ) => {
+        const optionsKey = Object.keys(options)
+            .sort()
+            .map((k) => options[k])
+            .join("-");
+        const itemKey = optionsKey ? `${id}-${optionsKey}` : id;
+        const existing = cart.find((i) => i.key === itemKey);
+        if (existing) {
+            existing.qty += qty;
+            if (existing.price === undefined) existing.price = price;
+        } else {
+            cart.push({ id, key: itemKey, name, price, qty, icon, options });
+        }
+        saveCart();
+        updateCartCount();
+        const optList = Object.values(options).filter(Boolean);
+        showToast(
+            `¡Añadido ${qty}x ${name}${optList.length ? ` (${optList.join(", ")})` : ""}!`,
+        );
+    };
 
-// --- DELIVERY TOGGLE ---
-const addressContainer = document.getElementById('delivery-address-container');
-document.querySelectorAll('input[name="delivery-type"]').forEach(radio => {
-  radio.addEventListener('change', (e) => {
-    if (addressContainer) {
-      addressContainer.style.display = (e.target as HTMLInputElement).value === 'delivery' ? 'block' : 'none';
-    }
-    
-    // Punto de Venta es solo para retiro
-    const paymentSelect = document.getElementById('payment-method') as HTMLSelectElement;
-    if (paymentSelect && (e.target as HTMLInputElement).value === 'delivery' && paymentSelect.value === 'punto') {
-        paymentSelect.value = '';
-    }
-    const puntoOption = paymentSelect?.querySelector('option[value="punto"]') as HTMLOptionElement;
-    if (puntoOption) {
-        puntoOption.disabled = (e.target as HTMLInputElement).value === 'delivery';
-    }
-    
-    renderCart(); // Recalculate total dynamically
-  });
-});
+    // Exponer para onclick attrs en HTML dinámico
+    (window as any)._cart = { updateQty, removeFromCart };
 
-// --- PAYMENT TOGGLE ---
-document.getElementById('payment-method')?.addEventListener('change', (e) => {
-  const method = (e.target as HTMLSelectElement).value;
-  const refContainer = document.getElementById('payment-reference-container');
-  const infoPagoMovil = document.getElementById('payment-info-pago-movil');
-  const infoZelle = document.getElementById('payment-info-zelle');
-  
-  if (infoPagoMovil) infoPagoMovil.style.display = method === 'pago_movil' ? 'block' : 'none';
-  if (infoZelle) infoZelle.style.display = method === 'zelle' ? 'block' : 'none';
-  if (refContainer) refContainer.style.display = (method === 'pago_movil' || method === 'zelle') ? 'block' : 'none';
-});
+    // --- EVENTOS CARRITO ---
+    document.getElementById("cart-btn")?.addEventListener("click", toggleCart);
+    document
+        .getElementById("close-cart")
+        ?.addEventListener("click", toggleCart);
+    document
+        .getElementById("cart-overlay")
+        ?.addEventListener("click", toggleCart);
 
-// --- WHATSAPP ORDER ---
-document.getElementById('whatsapp-order-btn')?.addEventListener('click', async () => {
-  const nameInput = document.getElementById('client-name') as HTMLInputElement;
-  const phoneInput = document.getElementById('client-phone') as HTMLInputElement;
-  const clientName = nameInput?.value.trim() || '';
-  const clientPhone = phoneInput?.value.trim() || '';
-  
-  const deliveryTypeInput = document.querySelector('input[name="delivery-type"]:checked') as HTMLInputElement;
-  const deliveryType = deliveryTypeInput?.value || 'retiro';
-  const addressInput = document.getElementById('delivery-address') as HTMLInputElement;
-  const deliveryAddress = addressInput?.value.trim() || '';
-
-  const paymentSelect = document.getElementById('payment-method') as HTMLSelectElement;
-  const paymentMethod = paymentSelect?.value || '';
-  const paymentRefInput = document.getElementById('payment-reference') as HTMLInputElement;
-  const paymentReference = paymentRefInput?.value.trim() || '';
-
-  if (!paymentMethod) {
-    showToast('⚠️ Selecciona un método de pago.');
-    paymentSelect?.focus();
-    return;
-  }
-  
-  if ((paymentMethod === 'pago_movil' || paymentMethod === 'zelle') && !paymentReference) {
-    showToast('⚠️ Ingresa el número de referencia del pago.');
-    paymentRefInput?.focus();
-    return;
-  }
-
-  const waBtn = document.getElementById('whatsapp-order-btn') as HTMLButtonElement;
-  waBtn.disabled = true;
-  waBtn.innerHTML = 'Registrando Pedido...';
-
-  try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientName, clientPhone, deliveryType, deliveryAddress, paymentMethod, paymentReference, items: cart }),
+    document.getElementById("cart-back-btn")?.addEventListener("click", () => {
+        if (currentCartStep > 1) (window as any).goToStep(currentCartStep - 1);
     });
-    if (!res.ok) throw new Error();
-    const result = await res.json() as { success: boolean; orderId?: string; error?: string };
 
-    if (result.success && result.orderId) {
-      let msg = `¡Hola FOGÓN! 🔥🍽️\n\nHe hecho un pedido desde la web.\n*Número de Pedido:* #${result.orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Mis platillos:*\n`;
-      cart.forEach(item => {
-        const opts = Object.entries(item.options || {}).filter(([, v]) => v)
-          .map(([k, v]) => `${labels[k] || k}: ${v}`).join(', ');
-        const itemTotal = item.price && item.price > 0 ? (item.price * item.qty).toFixed(2) : 'A consultar';
-        msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ''} - $${itemTotal}\n`;
-      });
-      const totalCount = cart.reduce((s, i) => s + i.qty, 0);
-      const deliveryCost = deliveryType === 'delivery' ? 5 : 0;
-      const totalPrice = cart.reduce((s, i) => s + ((i.price || 0) * i.qty), 0) + deliveryCost;
-      
-      msg += `\n*Entrega:* ${deliveryType === 'delivery' ? '🛵 Delivery (+$5)' : '🏪 Retiro en local'}`;
-      if (deliveryType === 'delivery') {
-        msg += `\n*Dirección:* ${deliveryAddress}`;
-      }
-      
-      const paymentLabels: Record<string, string> = { pago_movil: '📱 Pago Móvil', zelle: '🇺🇸 Zelle', efectivo: '💵 Efectivo', punto: '💳 Punto de Venta' };
-      msg += `\n*Pago:* ${paymentLabels[paymentMethod] || paymentMethod}`;
-      if (paymentReference) {
-        msg += `\n*Referencia:* ${paymentReference}`;
-      }
-      
-      msg += `\n\n*Total de platillos:* ${totalCount}\n*Total a pagar:* $${totalPrice.toFixed(2)}\n\n🚀 *Por favor confírmen el pedido. ¡Gracias!*`;
+    document.getElementById("cart-next-btn")?.addEventListener("click", () => {
+        if (currentCartStep < 3) (window as any).goToStep(currentCartStep + 1);
+    });
 
-      cart = []; saveCart(); updateCartCount(); renderCart();
-      if (nameInput) nameInput.value = '';
-      if (phoneInput) phoneInput.value = '';
-      if (paymentSelect) paymentSelect.value = '';
-      if (paymentRefInput) paymentRefInput.value = '';
-      if (document.getElementById('payment-reference-container')) document.getElementById('payment-reference-container')!.style.display = 'none';
-      if (document.getElementById('payment-info-pago-movil')) document.getElementById('payment-info-pago-movil')!.style.display = 'none';
-      if (document.getElementById('payment-info-zelle')) document.getElementById('payment-info-zelle')!.style.display = 'none';
-      toggleCart();
-      showToast(`🎉 ¡Pedido #${result.orderId} registrado con éxito!`);
-      window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-    } else {
-      throw new Error(result.error || 'Error');
-    }
-  } catch {
-    showToast('❌ Error de conexión al registrar pedido. Intenta de nuevo.');
-  } finally {
-    waBtn.disabled = false;
-    waBtn.innerHTML = 'Enviar Pedido por WhatsApp';
-  }
-});
+    const confirmModal = document.getElementById("confirm-modal");
+    document.getElementById("clear-cart")?.addEventListener("click", () => {
+        if (cart.length > 0) confirmModal?.classList.add("active");
+    });
+    document
+        .getElementById("modal-cancel")
+        ?.addEventListener("click", () =>
+            confirmModal?.classList.remove("active"),
+        );
+    confirmModal?.addEventListener("click", (e) => {
+        if (e.target === confirmModal) confirmModal.classList.remove("active");
+    });
+    document.getElementById("modal-confirm")?.addEventListener("click", () => {
+        cart = [];
+        saveCart();
+        renderCart();
+        updateCartCount();
+        confirmModal?.classList.remove("active");
+        showToast("Pedido vaciado");
+    });
 
-// --- CATÁLOGO ---
-let catalogProducts: any[] = [];
-let activeCategory = 'all';
-let searchQuery = '';
-const PAGE_SIZE = 6;
-let visibleCount = PAGE_SIZE;
+    // --- DELIVERY TOGGLE ---
+    const addressContainer = document.getElementById(
+        "delivery-address-container",
+    );
+    document
+        .querySelectorAll('input[name="delivery-type"]')
+        .forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+                if (addressContainer) {
+                    addressContainer.style.display =
+                        (e.target as HTMLInputElement).value === "delivery"
+                            ? "block"
+                            : "none";
+                }
 
-const categoryNames: Record<string, string> = {
-  all: 'Todo 🍽️',
-  entradas: '🥗 Entradas',
-  principales: '🍖 Platos Principales',
-  combos: '🪙 Combos',
-  postres: '🍰 Postres',
-  bebidas: '🥤 Bebidas'
-};
-const colorMap: Record<string, string> = {
-  pequeno: '#FFD4C2',
-  mediano: '#FF6B35',
-  grande: '#C1121F',
-  familiar: '#7B2D00',
-  res: '#8B1A1A',
-  pollo: '#D4822A',
-  cerdo: '#C0504D',
-  mixto: '#FF6B35',
-  veggie: '#2A9D4E'
-};
+                // Punto de Venta es solo para retiro
+                const paymentSelect = document.getElementById(
+                    "payment-method",
+                ) as HTMLSelectElement;
+                if (
+                    paymentSelect &&
+                    (e.target as HTMLInputElement).value === "delivery" &&
+                    paymentSelect.value === "punto"
+                ) {
+                    paymentSelect.value = "";
+                }
+                const puntoOption = paymentSelect?.querySelector(
+                    'option[value="punto"]',
+                ) as HTMLOptionElement;
+                if (puntoOption) {
+                    puntoOption.disabled =
+                        (e.target as HTMLInputElement).value === "delivery";
+                }
 
-const renderCategoryFilters = (products: any[]) => {
-  const container = document.getElementById('category-filters');
-  if (!container) return;
-  const types = new Set<string>(products.map((p: any) => p.type_id).filter(Boolean));
-  const toRender = ['all', ...Array.from(types)];
-  container.innerHTML = toRender.map(type => {
-    const name = categoryNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
-    return `<button class="category-filter-btn ${activeCategory === type ? 'active' : ''}" data-category="${type}">${name}</button>`;
-  }).join('');
-};
+                renderCart(); // Recalcular total dinámicamente
+            });
+        });
 
-const renderProducts = (products: any[]) => {
-  const container = document.getElementById('catalog-container');
-  const loadMoreContainer = document.getElementById('load-more-container');
-  if (!container) return;
-  
-  let filtered = activeCategory === 'all' ? products : products.filter((p: any) => p.type_id === activeCategory);
-  
-  if (searchQuery.trim() !== '') {
-    const q = searchQuery.toLowerCase().trim();
-    filtered = filtered.filter((p: any) => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)));
-  }
+    // --- PAYMENT TOGGLE ---
+    document
+        .getElementById("payment-method")
+        ?.addEventListener("change", (e) => {
+            const method = (e.target as HTMLSelectElement).value;
+            const refContainer = document.getElementById(
+                "payment-reference-container",
+            );
+            const infoPagoMovil = document.getElementById(
+                "payment-info-pago-movil",
+            );
+            const infoZelle = document.getElementById("payment-info-zelle");
 
-  if (filtered.length === 0) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:var(--text-secondary)"><p>No se encontraron productos que coincidan con tu búsqueda.</p></div>';
-    if (loadMoreContainer) loadMoreContainer.style.display = 'none';
-    return;
-  }
+            if (infoPagoMovil)
+                infoPagoMovil.style.display =
+                    method === "pago_movil" ? "block" : "none";
+            if (infoZelle)
+                infoZelle.style.display = method === "zelle" ? "block" : "none";
+            if (refContainer)
+                refContainer.style.display =
+                    method === "pago_movil" || method === "zelle"
+                        ? "block"
+                        : "none";
+        });
 
-  const paginated = filtered.slice(0, visibleCount);
-  
-  if (loadMoreContainer) {
-    loadMoreContainer.style.display = filtered.length > visibleCount ? 'block' : 'none';
-  }
+    // --- WHATSAPP ORDER ---
+    document
+        .getElementById("whatsapp-order-btn")
+        ?.addEventListener("click", async () => {
+            const nameInput = document.getElementById(
+                "client-name",
+            ) as HTMLInputElement;
+            const phoneInput = document.getElementById(
+                "client-phone",
+            ) as HTMLInputElement;
+            const clientName = nameInput?.value.trim() || "";
+            const clientPhone = phoneInput?.value.trim() || "";
 
-  container.innerHTML = paginated.map((p: any) => {
-    let attributesHtml = '';
-    if (p.attributes?.length > 0) {
-      attributesHtml = p.attributes.map((attr: any) => {
-        const optionsHtml = attr.type === 'color_swatch'
-          ? `<div class="color-swatch-container" data-attribute="${attr.key}" data-product="${p.id}">${attr.values.map((val: string, idx: number) => {
-              const hex = colorMap[val.toLowerCase().trim()] || val;
-              const lightClass = ['blanco', 'amarillo', 'beige', 'white', 'yellow'].includes(val.toLowerCase().trim()) ? 'light-color' : '';
-              return `<button class="color-swatch-btn ${idx === 0 ? 'active' : ''} ${lightClass}" style="background-color:${hex};" data-value="${val}" title="${val}"></button>`;
-            }).join('')}</div>`
-          : `<div class="attribute-selector" data-attribute="${attr.key}" data-product="${p.id}">${attr.values.map((val: string, idx: number) =>
-              `<button class="attribute-btn ${idx === 0 ? 'active' : ''}" data-value="${val}">${val}</button>`
-            ).join('')}</div>`;
-        return `<div class="attribute-options-group"><label>${attr.label}:</label>${optionsHtml}</div>`;
-      }).join('');
-    }
+            const deliveryTypeInput = document.querySelector(
+                'input[name="delivery-type"]:checked',
+            ) as HTMLInputElement;
+            const deliveryType = deliveryTypeInput?.value || "retiro";
+            const addressInput = document.getElementById(
+                "delivery-address",
+            ) as HTMLInputElement;
+            const deliveryAddress = addressInput?.value.trim() || "";
 
-    const legacySizesHtml = (p.sizes && (!p.attributes || !p.attributes.some((a: any) => a.key === 'size')))
-      ? `<div class="attribute-options-group"><label>Talla:</label><div class="attribute-selector" data-attribute="size" data-product="${p.id}">${p.sizes.split(',').map((size: string, idx: number) =>
-          `<button class="attribute-btn ${idx === 0 ? 'active' : ''}" data-value="${size}">${size}</button>`
-        ).join('')}</div></div>` : '';
+            const paymentSelect = document.getElementById(
+                "payment-method",
+            ) as HTMLSelectElement;
+            const paymentMethod = paymentSelect?.value || "";
+            const paymentRefInput = document.getElementById(
+                "payment-reference",
+            ) as HTMLInputElement;
+            const paymentReference = paymentRefInput?.value.trim() || "";
 
-    return `
+            if (!paymentMethod) {
+                showToast("⚠️ Selecciona un método de pago.");
+                paymentSelect?.focus();
+                return;
+            }
+
+            if (
+                (paymentMethod === "pago_movil" || paymentMethod === "zelle") &&
+                !paymentReference
+            ) {
+                showToast("⚠️ Ingresa el número de referencia del pago.");
+                paymentRefInput?.focus();
+                return;
+            }
+
+            const waBtn = document.getElementById(
+                "whatsapp-order-btn",
+            ) as HTMLButtonElement;
+            waBtn.disabled = true;
+            waBtn.innerHTML = "Registrando Pedido...";
+
+            const labels: Record<string, string> = {
+                size: "Tamaño",
+                proteina: "Proteína",
+                punto: "Punto",
+                salsa: "Salsa",
+                cantidad: "Cantidad",
+            };
+
+            try {
+                const res = await fetch("/api/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        clientName,
+                        clientPhone,
+                        deliveryType,
+                        deliveryAddress,
+                        paymentMethod,
+                        paymentReference,
+                        paymentReceipt: uploadedReceiptBase64,
+                        bcvRate: currentBcvRate,
+                        items: cart,
+                    }),
+                });
+
+                const result = (await res.json()) as {
+                    success: boolean;
+                    orderId?: string;
+                    error?: string;
+                };
+
+                if (!res.ok || !result.success || !result.orderId) {
+                    throw new Error(
+                        result.error || "Error al procesar el pedido.",
+                    );
+                }
+
+                let msg = `¡Hola FOGÓN! 🔥🍽️\n\nHe hecho un pedido desde la web.\n*Número de Pedido:* #${result.orderId}\n*Cliente:* ${clientName} (${clientPhone})\n\n*Mis platillos:*\n`;
+                cart.forEach((item) => {
+                    const opts = Object.entries(item.options || {})
+                        .filter(([, v]) => v)
+                        .map(([k, v]) => `${labels[k] || k}: ${v}`)
+                        .join(", ");
+                    const itemTotal =
+                        item.price && item.price > 0
+                            ? (item.price * item.qty).toFixed(2)
+                            : "A consultar";
+                    msg += `✅ ${item.qty}x ${item.name}${opts ? ` [${opts}]` : ""} - $${itemTotal}\n`;
+                });
+                const totalCount = cart.reduce((s, i) => s + i.qty, 0);
+                const deliveryCost = deliveryType === "delivery" ? 5 : 0;
+                const totalPrice =
+                    cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0) +
+                    deliveryCost;
+
+                msg += `\n*Entrega:* ${deliveryType === "delivery" ? "🛵 Delivery (+$5)" : "🏪 Retiro en local"}`;
+                if (deliveryType === "delivery") {
+                    msg += `\n*Dirección:* ${deliveryAddress}`;
+                }
+
+                const paymentLabels: Record<string, string> = {
+                    pago_movil: "📱 Pago Móvil",
+                    zelle: "🇺🇸 Zelle",
+                    efectivo: "💵 Efectivo",
+                    punto: "💳 Punto de Venta",
+                };
+                msg += `\n*Pago:* ${paymentLabels[paymentMethod] || paymentMethod}`;
+                if (paymentReference) {
+                    msg += `\n*Referencia:* ${paymentReference}`;
+                }
+
+                if (uploadedReceiptBase64) {
+                    msg += `\n*Comprobante:* ✅ Adjuntado en el sistema web`;
+                }
+                const totalBsFormatted = (totalPrice * currentBcvRate).toFixed(2);
+                msg += `\n\n*Total USD:* ${totalPrice.toFixed(2)}`;
+                msg += `\n*Tasa Oficial BCV:* Bs. ${currentBcvRate.toFixed(2)}`;
+                msg += `\n*Total en Bolívares:* Bs. ${totalBsFormatted}`;
+                msg += `\n\n🚀 *Por favor confirmen el pedido. ¡Gracias!*`;
+
+                const waUrl = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(
+                    navigator.userAgent,
+                );
+
+                cart = [];
+                saveCart();
+                updateCartCount();
+                renderCart();
+                if (nameInput) nameInput.value = "";
+                if (phoneInput) phoneInput.value = "";
+                if (paymentSelect) paymentSelect.value = "";
+                if (paymentRefInput) paymentRefInput.value = "";
+                uploadedReceiptBase64 = null;
+                if (receiptFileInput) receiptFileInput.value = "";
+                const previewBox = document.getElementById("receipt-preview-box");
+                const promptBox = document.getElementById("receipt-prompt");
+                if (promptBox) promptBox.style.display = "block";
+                if (previewBox) previewBox.style.display = "none";
+                if (document.getElementById("payment-reference-container"))
+                    document.getElementById(
+                        "payment-reference-container",
+                    )!.style.display = "none";
+                if (document.getElementById("payment-info-pago-movil"))
+                    document.getElementById(
+                        "payment-info-pago-movil",
+                    )!.style.display = "none";
+                if (document.getElementById("payment-info-zelle"))
+                    document.getElementById(
+                        "payment-info-zelle",
+                    )!.style.display = "none";
+
+                toggleCart();
+                showToast(
+                    `🎉 ¡Pedido #${result.orderId} registrado con éxito!`,
+                );
+
+                // Evitar bloqueo de popup en navegadores móviles
+                if (isMobile) {
+                    window.location.href = waUrl;
+                } else {
+                    window.open(waUrl, "_blank");
+                }
+            } catch (err: any) {
+                showToast(
+                    `❌ ${err.message || "Error al registrar pedido. Intenta de nuevo."}`,
+                );
+            } finally {
+                waBtn.disabled = false;
+                waBtn.innerHTML = "Enviar Pedido por WhatsApp";
+            }
+        });
+
+    // --- CATÁLOGO ---
+    let catalogProducts: any[] = [];
+    let activeCategory = "all";
+    let searchQuery = "";
+    const PAGE_SIZE = 6;
+    let visibleCount = PAGE_SIZE;
+
+    const categoryNames: Record<string, string> = {
+        all: "Todo 🍽️",
+        entradas: "🥗 Entradas",
+        principales: "🥩 Platos Principales",
+        combos: "🪙 Combos",
+        postres: "🍰 Postres",
+        bebidas: "🥤 Bebidas",
+    };
+    const colorMap: Record<string, string> = {
+        pequeno: "#FFD4C2",
+        mediano: "#FF6B35",
+        grande: "#C1121F",
+        familiar: "#7B2D00",
+        res: "#8B1A1A",
+        pollo: "#D4822A",
+        cerdo: "#C0504D",
+        mixto: "#FF6B35",
+        veggie: "#2A9D4E",
+    };
+
+    const renderCategoryFilters = (products: any[]) => {
+        const container = document.getElementById("category-filters");
+        if (!container) return;
+        const types = new Set<string>(
+            products.map((p: any) => p.type_id || p.category).filter(Boolean),
+        );
+        const toRender = ["all", ...Array.from(types)];
+        container.innerHTML = toRender
+            .map((type) => {
+                const name =
+                    categoryNames[type] ||
+                    type.charAt(0).toUpperCase() + type.slice(1);
+                return `<button class="category-filter-btn ${activeCategory === type ? "active" : ""}" data-category="${type}">${name}</button>`;
+            })
+            .join("");
+    };
+
+    const renderProducts = (products: any[]) => {
+        const container = document.getElementById("catalog-container");
+        const loadMoreContainer = document.getElementById(
+            "load-more-container",
+        );
+        if (!container) return;
+
+        let filtered =
+            activeCategory === "all"
+                ? products
+                : products.filter((p: any) => (p.type_id || p.category) === activeCategory);
+
+        if (searchQuery.trim() !== "") {
+            const q = searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(
+                (p: any) =>
+                    p.name.toLowerCase().includes(q) ||
+                    (p.description && p.description.toLowerCase().includes(q)),
+            );
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML =
+                '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:var(--text-secondary)"><p>No se encontraron productos que coincidan con tu búsqueda.</p></div>';
+            if (loadMoreContainer) loadMoreContainer.style.display = "none";
+            return;
+        }
+
+        const paginated = filtered.slice(0, visibleCount);
+
+        if (loadMoreContainer) {
+            loadMoreContainer.style.display =
+                filtered.length > visibleCount ? "block" : "none";
+        }
+
+        container.innerHTML = paginated
+            .map((p: any) => {
+                let attributesHtml = "";
+                if (p.attributes?.length > 0) {
+                    attributesHtml = p.attributes
+                        .map((attr: any) => {
+                            const optionsHtml =
+                                attr.type === "color_swatch"
+                                    ? `<div class="color-swatch-container" data-attribute="${attr.key}" data-product="${p.id}">${attr.values
+                                          .map((val: string, idx: number) => {
+                                              const hex =
+                                                  colorMap[
+                                                      val.toLowerCase().trim()
+                                                  ] || val;
+                                              const lightClass = [
+                                                  "blanco",
+                                                  "amarillo",
+                                                  "beige",
+                                                  "white",
+                                                  "yellow",
+                                              ].includes(
+                                                  val.toLowerCase().trim(),
+                                              )
+                                                  ? "light-color"
+                                                  : "";
+                                              return `<button class="color-swatch-btn ${idx === 0 ? "active" : ""} ${lightClass}" style="background-color:${hex};" data-value="${val}" title="${val}"></button>`;
+                                          })
+                                          .join("")}</div>`
+                                    : `<div class="attribute-selector" data-attribute="${attr.key}" data-product="${p.id}">${attr.values
+                                          .map(
+                                              (val: string, idx: number) =>
+                                                  `<button class="attribute-btn ${idx === 0 ? "active" : ""}" data-value="${val}">${val}</button>`,
+                                          )
+                                          .join("")}</div>`;
+                            return `<div class="attribute-options-group"><label>${attr.label}:</label>${optionsHtml}</div>`;
+                        })
+                        .join("");
+                }
+
+                const legacySizesHtml =
+                    p.sizes &&
+                    (!p.attributes ||
+                        !p.attributes.some((a: any) => a.key === "size"))
+                        ? `<div class="attribute-options-group"><label>Opciones:</label><div class="attribute-selector" data-attribute="size" data-product="${p.id}">${p.sizes
+                              .split(",")
+                              .map(
+                                  (size: string, idx: number) =>
+                                      `<button class="attribute-btn ${idx === 0 ? "active" : ""}" data-value="${size}">${size}</button>`,
+                              )
+                              .join("")}</div></div>`
+                        : "";
+
+                return `
       <div class="product-card reveal">
         <div class="product-img"><img src="${p.image_url}" alt="${p.name}" loading="lazy"></div>
         <div class="product-info">
           <div class="product-header"><h3>${p.name}</h3></div>
-          <div class="product-price" style="font-size:1.3rem;font-weight:700;color:var(--accent);margin:.5rem 0 .8rem;font-family:'Outfit',sans-serif;">${p.price > 0 ? `$${parseFloat(p.price).toFixed(2)}` : 'A consultar'}</div>
-          <p class="product-desc" style="min-height:auto;margin-bottom:1.2rem;">${p.description || ''}</p>
+          <div class="product-price" style="font-size:1.3rem;font-weight:700;color:var(--accent);margin:.5rem 0 .8rem;font-family:'Outfit',sans-serif;">${p.price > 0 ? `${parseFloat(p.price).toFixed(2)} <span style="font-size:0.85rem; font-weight:normal; color:var(--text-light); margin-left:4px;">(~Bs. ${(p.price * currentBcvRate).toFixed(2)})</span>` : "A consultar"}</div>
+          <p class="product-desc" style="min-height:auto;margin-bottom:1.2rem;">${p.description || ""}</p>
           ${attributesHtml}${legacySizesHtml}
           <div class="product-actions">
             <div class="main-qty-selector">
@@ -658,124 +1348,150 @@ const renderProducts = (products: any[]) => {
               <input type="number" value="1" min="1" id="qty-${p.id}" class="qty-input">
               <button class="qty-btn-main plus" data-id="${p.id}">+</button>
             </div>
-            <button class="cta-btn product-cta add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-input="qty-${p.id}" data-icon="${p.icon || 'package'}">Agregar</button>
+            <button class="cta-btn product-cta add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-input="qty-${p.id}" data-icon="${p.icon || "package"}">Agregar</button>
           </div>
         </div>
       </div>`;
-  }).join('');
+            })
+            .join("");
 
-  initReveal();
-};
+        initReveal();
+    };
 
-const fetchCatalog = async () => {
-  try {
-    const res = await fetch('/api/products');
-    if (!res.ok) throw new Error();
-    const products = await res.json() as any[];
-    catalogProducts = products;
-    renderCategoryFilters(products);
-    renderProducts(products);
-  } catch {
-    const container = document.getElementById('catalog-container');
-    if (container) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:#ff007f"><p>Error al cargar el catálogo. Por favor recarga la página.</p></div>';
-    }
-  }
-};
+    const fetchCatalog = async () => {
+        try {
+            const res = await fetch("/api/products");
+            if (!res.ok) throw new Error();
+            const products = (await res.json()) as any[];
+            catalogProducts = products;
+            renderCategoryFilters(products);
+            renderProducts(products);
+        } catch {
+            const container = document.getElementById("catalog-container");
+            if (container) {
+                container.innerHTML =
+                    '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:#ff007f"><p>Error al cargar el catálogo. Por favor recarga la página.</p></div>';
+            }
+        }
+    };
 
-// Event delegation catálogo
-document.getElementById('catalog-container')?.addEventListener('click', (e) => {
-  const target = e.target as HTMLElement;
+    // Event delegation catálogo
+    document
+        .getElementById("catalog-container")
+        ?.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
 
-  const optionBtn = target.closest('.attribute-btn, .color-swatch-btn') as HTMLElement;
-  if (optionBtn) {
-    const selector = optionBtn.parentElement!;
-    selector.querySelectorAll('.attribute-btn, .color-swatch-btn').forEach(b => b.classList.remove('active'));
-    optionBtn.classList.add('active');
-    return;
-  }
+            const optionBtn = target.closest(
+                ".attribute-btn, .color-swatch-btn",
+            ) as HTMLElement;
+            if (optionBtn) {
+                const selector = optionBtn.parentElement!;
+                selector
+                    .querySelectorAll(".attribute-btn, .color-swatch-btn")
+                    .forEach((b) => b.classList.remove("active"));
+                optionBtn.classList.add("active");
+                return;
+            }
 
-  const qtyBtn = target.closest('.qty-btn-main') as HTMLElement;
-  if (qtyBtn) {
-    const id = qtyBtn.getAttribute('data-id')!;
-    const input = document.getElementById(`qty-${id}`) as HTMLInputElement;
-    if (input) {
-      let val = parseInt(input.value) || 1;
-      if (qtyBtn.classList.contains('plus')) val++;
-      else if (qtyBtn.classList.contains('minus') && val > 1) val--;
-      input.value = String(val);
-    }
-    return;
-  }
+            const qtyBtn = target.closest(".qty-btn-main") as HTMLElement;
+            if (qtyBtn) {
+                const id = qtyBtn.getAttribute("data-id")!;
+                const input = document.getElementById(
+                    `qty-${id}`,
+                ) as HTMLInputElement;
+                if (input) {
+                    let val = parseInt(input.value) || 1;
+                    if (qtyBtn.classList.contains("plus")) val++;
+                    else if (qtyBtn.classList.contains("minus") && val > 1)
+                        val--;
+                    input.value = String(val);
+                }
+                return;
+            }
 
-  const addBtn = target.closest('.add-to-cart') as HTMLElement;
-  if (addBtn) {
-    const id = addBtn.getAttribute('data-id')!;
-    const name = addBtn.getAttribute('data-name')!;
-    const price = parseFloat(addBtn.getAttribute('data-price') || '0');
-    const icon = addBtn.getAttribute('data-icon') || 'package';
-    const input = document.getElementById(addBtn.getAttribute('data-input')!) as HTMLInputElement;
-    const qty = input ? parseInt(input.value) || 1 : 1;
+            const addBtn = target.closest(".add-to-cart") as HTMLElement;
+            if (addBtn) {
+                const id = addBtn.getAttribute("data-id")!;
+                const name = addBtn.getAttribute("data-name")!;
+                const price = parseFloat(
+                    addBtn.getAttribute("data-price") || "0",
+                );
+                const icon = addBtn.getAttribute("data-icon") || "package";
+                const input = document.getElementById(
+                    addBtn.getAttribute("data-input")!,
+                ) as HTMLInputElement;
+                const qty = input ? parseInt(input.value) || 1 : 1;
 
-    const options: Record<string, string> = {};
-    const card = addBtn.closest('.product-card');
-    card?.querySelectorAll<HTMLElement>('[data-attribute]').forEach(sel => {
-      const key = sel.getAttribute('data-attribute')!;
-      const activeBtn = sel.querySelector<HTMLElement>('.active');
-      const val = activeBtn?.getAttribute('data-value');
-      if (val) options[key] = val;
+                const options: Record<string, string> = {};
+                const card = addBtn.closest(".product-card");
+                card?.querySelectorAll<HTMLElement>("[data-attribute]").forEach(
+                    (sel) => {
+                        const key = sel.getAttribute("data-attribute")!;
+                        const activeBtn =
+                            sel.querySelector<HTMLElement>(".active");
+                        const val = activeBtn?.getAttribute("data-value");
+                        if (val) options[key] = val;
+                    },
+                );
+
+                addToCart(id, name, price, qty, icon, options);
+                if (input) input.value = "1";
+            }
+        });
+
+    // Filtros de categoría
+    document
+        .getElementById("category-filters")
+        ?.addEventListener("click", (e) => {
+            const btn = (e.target as HTMLElement).closest(
+                ".category-filter-btn",
+            ) as HTMLElement;
+            if (!btn) return;
+            activeCategory = btn.getAttribute("data-category")!;
+            document
+                .querySelectorAll(".category-filter-btn")
+                .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            visibleCount = PAGE_SIZE; // Reset paginador
+            renderProducts(catalogProducts);
+        });
+
+    // Buscador en tiempo real
+    const searchInput = document.getElementById("product-search");
+    const clearSearchBtn = document.getElementById("clear-search");
+
+    searchInput?.addEventListener("input", (e) => {
+        searchQuery = (e.target as HTMLInputElement).value;
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display =
+                searchQuery.length > 0 ? "flex" : "none";
+        }
+        visibleCount = PAGE_SIZE; // Reset paginador
+        renderProducts(catalogProducts);
     });
 
-    addToCart(id, name, price, qty, icon, options);
-    if (input) input.value = '1';
-  }
-});
+    clearSearchBtn?.addEventListener("click", () => {
+        if (searchInput) {
+            (searchInput as HTMLInputElement).value = "";
+            searchQuery = "";
+            clearSearchBtn.style.display = "none";
+            visibleCount = PAGE_SIZE;
+            renderProducts(catalogProducts);
+            searchInput.focus();
+        }
+    });
 
-// Filtros de categoría
-document.getElementById('category-filters')?.addEventListener('click', (e) => {
-  const btn = (e.target as HTMLElement).closest('.category-filter-btn') as HTMLElement;
-  if (!btn) return;
-  activeCategory = btn.getAttribute('data-category')!;
-  document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  visibleCount = PAGE_SIZE; // Reset paginador
-  renderProducts(catalogProducts);
-});
+    // Botón Ver Más
+    document.getElementById("load-more-btn")?.addEventListener("click", () => {
+        visibleCount += PAGE_SIZE;
+        renderProducts(catalogProducts);
+    });
 
-// Buscador en tiempo real
-const searchInput = document.getElementById('product-search');
-const clearSearchBtn = document.getElementById('clear-search');
-
-searchInput?.addEventListener('input', (e) => {
-  searchQuery = (e.target as HTMLInputElement).value;
-  if (clearSearchBtn) {
-    clearSearchBtn.style.display = searchQuery.length > 0 ? 'flex' : 'none';
-  }
-  visibleCount = PAGE_SIZE; // Reset paginador
-  renderProducts(catalogProducts);
-});
-
-clearSearchBtn?.addEventListener('click', () => {
-  if (searchInput) {
-    (searchInput as HTMLInputElement).value = '';
-    searchQuery = '';
-    clearSearchBtn.style.display = 'none';
-    visibleCount = PAGE_SIZE;
-    renderProducts(catalogProducts);
-    searchInput.focus();
-  }
-});
-
-// Botón Ver Más
-document.getElementById('load-more-btn')?.addEventListener('click', () => {
-  visibleCount += PAGE_SIZE;
-  renderProducts(catalogProducts);
-});
-
-// Inicialización
-window.addEventListener('load', () => {
-  initReveal();
-  fetchCatalog();
-  updateCartCount();
-});
+    // Inicialización
+    window.addEventListener("load", () => {
+        initReveal();
+        fetchBcvRate();
+        fetchCatalog();
+        updateCartCount();
+    });
 </script>

@@ -1,4 +1,4 @@
-// Controlador de Catálogo de Productos - Fogon
+// Controlador de Catálogo de Productos - FOGÓN Restaurante
 import { verifySession, unauthorizedResponse } from "./_auth.js";
 
 /**
@@ -60,14 +60,16 @@ export async function onRequestGet(context) {
             });
         }
 
-        // Adjuntar atributos a cada producto
+        // Adjuntar atributos y normalizar categorías a cada producto
         for (const product of products) {
+            product.type_id = product.type_id || product.category || 'principales';
+            product.category = product.category || product.type_id;
             product.attributes = attrsMap[product.id] || [];
         }
 
         const cacheControl = isAdminMode 
             ? "no-store, no-cache, must-revalidate" 
-            : "public, max-age=5"; // Cache corto de 5s para catálogo público
+            : "public, max-age=10";
 
         return new Response(JSON.stringify(products), {
             headers: { 
@@ -76,7 +78,8 @@ export async function onRequestGet(context) {
             }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en GET /api/products:", err);
+        return new Response(JSON.stringify({ error: "Error interno al consultar productos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -99,49 +102,48 @@ export async function onRequestPost(context) {
         const { id, name, description, price, category, icon, image_url, sizes, active } = data;
 
         if (!id || !name) {
-            return new Response(JSON.stringify({ error: "ID y Nombre son campos requeridos." }), {
+            return new Response(JSON.stringify({ error: "ID (slug) y Nombre son requeridos." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
         }
 
-        productId = id.toLowerCase().trim();
+        productId = id.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '-');
+        const cleanCategory = (category || 'principales').toLowerCase().trim();
 
-        // Validar si el ID único ya existe en la base de datos antes de intentar insertar
+        // Validar si el ID ya existe
         const existing = await db.prepare("SELECT id FROM products WHERE id = ?").bind(productId).first();
         if (existing) {
-            return new Response(JSON.stringify({ error: `El ID único (Slug) "${productId}" ya está registrado para otro producto. Por favor elige uno diferente.` }), {
+            return new Response(JSON.stringify({ error: `El identificador "${productId}" ya está registrado.` }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
         }
 
         await db.prepare(
-            "INSERT INTO products (id, name, description, price, category, icon, image_url, sizes, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO products (id, name, type_id, category, description, price, icon, image_url, sizes, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )
         .bind(
             productId,
-            name.trim(),
-            description || "",
+            name.trim().slice(0, 150),
+            cleanCategory,
+            cleanCategory,
+            (description || "").trim().slice(0, 500),
             parseFloat(price) || 0.0,
-            category || "general",
-            icon || "package",
-            image_url || "assets/product_placeholder.png",
-            sizes || null,
+            (icon || "utensils").trim().slice(0, 50),
+            (image_url || "assets/product_placeholder.png").trim().slice(0, 300),
+            sizes ? String(sizes).trim().slice(0, 200) : null,
             active !== undefined ? active : 1
         )
         .run();
 
-        return new Response(JSON.stringify({ success: true, message: "Producto creado con éxito." }), {
+        return new Response(JSON.stringify({ success: true, message: "Plato creado exitosamente en el menú." }), {
             status: 201,
             headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
-        let errorMessage = err.message;
-        if (err.message.includes("UNIQUE constraint failed: products.id") || err.message.includes("SQLITE_CONSTRAINT")) {
-            errorMessage = `El ID único (Slug) "${productId}" ya está registrado. Por favor, usa otro ID.`;
-        }
-        return new Response(JSON.stringify({ error: errorMessage }), {
+        console.error("Error en POST /api/products:", err);
+        return new Response(JSON.stringify({ error: "Error al guardar el plato en la base de datos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -178,27 +180,31 @@ export async function onRequestPut(context) {
             });
         }
 
+        const cleanCategory = (category || existing.category || 'principales').toLowerCase().trim();
+
         await db.prepare(
-            "UPDATE products SET name = ?, description = ?, price = ?, category = ?, icon = ?, image_url = ?, sizes = ?, active = ? WHERE id = ?"
+            "UPDATE products SET name = ?, type_id = ?, category = ?, description = ?, price = ?, icon = ?, image_url = ?, sizes = ?, active = ? WHERE id = ?"
         )
         .bind(
-            name.trim(),
-            description || "",
+            name.trim().slice(0, 150),
+            cleanCategory,
+            cleanCategory,
+            (description || "").trim().slice(0, 500),
             parseFloat(price) || 0.0,
-            category || "general",
-            icon || "package",
-            image_url || "assets/product_placeholder.png",
-            sizes || null,
+            (icon || "utensils").trim().slice(0, 50),
+            (image_url || "assets/product_placeholder.png").trim().slice(0, 300),
+            sizes ? String(sizes).trim().slice(0, 200) : null,
             active !== undefined ? active : 1,
             id
         )
         .run();
 
-        return new Response(JSON.stringify({ success: true, message: "Producto actualizado con éxito." }), {
+        return new Response(JSON.stringify({ success: true, message: "Plato actualizado exitosamente." }), {
             headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en PUT /api/products:", err);
+        return new Response(JSON.stringify({ error: "Error al actualizar plato en base de datos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
@@ -220,15 +226,15 @@ export async function onRequestDelete(context) {
         const id = url.searchParams.get("id");
 
         if (!id) {
-            return new Response(JSON.stringify({ error: "ID de producto es requerido para eliminar." }), {
+            return new Response(JSON.stringify({ error: "ID de producto es requerido." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
             });
         }
 
-        // Eliminar producto
+        await db.prepare("DELETE FROM product_attributes WHERE product_id = ?").bind(id).run();
         const result = await db.prepare("DELETE FROM products WHERE id = ?").bind(id).run();
-        
+
         if (result.meta.changes === 0) {
             return new Response(JSON.stringify({ error: "Producto no encontrado." }), {
                 status: 404,
@@ -236,11 +242,12 @@ export async function onRequestDelete(context) {
             });
         }
 
-        return new Response(JSON.stringify({ success: true, message: "Producto eliminado con éxito." }), {
+        return new Response(JSON.stringify({ success: true, message: "Plato eliminado del menú." }), {
             headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error("Error en DELETE /api/products:", err);
+        return new Response(JSON.stringify({ error: "Error interno al eliminar plato." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

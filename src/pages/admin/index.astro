@@ -1,393 +1,1468 @@
 ---
 // src/pages/admin/index.astro
-// Panel Administrativo estático
+// Panel Administrativo estático - FOGÓN Restaurante
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fogon | Panel Administrativo</title>
-  <meta name="robots" content="noindex, nofollow">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FOGÓN | Panel Administrativo</title>
+        <meta name="robots" content="noindex, nofollow" />
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
 
-  <!-- Lucide Icons (admin hace createIcons() extensivamente en JS dinámico) -->
-  <script src="https://unpkg.com/lucide@latest" is:inline></script>
+        <!-- Lucide Icons -->
+        <script src="https://unpkg.com/lucide@latest" is:inline></script>
+        <style is:inline>
+            :root {
+                --primary: #c9748a;
+                --accent: #b8860b;
+                --yellow: #d4af37;
+                --dark-bg: #0f0b0d;
+                --card-bg: rgba(35, 22, 28, 0.75);
+                --border-color: rgba(255, 255, 255, 0.08);
+                --text-primary: #fdf8f5;
+                --text-secondary: #c4a8b0;
+                --white: #ffffff;
+                --success: #22c55e;
+                --warning: #eab308;
+                --danger: #ef4444;
+                --info: #3b82f6;
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: var(--dark-bg);
+                color: var(--text-primary);
+                line-height: 1.6;
+                min-height: 100vh;
+                overflow-x: hidden;
+                background-image:
+                    radial-gradient(
+                        at 0% 0%,
+                        rgba(201, 116, 138, 0.18) 0px,
+                        transparent 50%
+                    ),
+                    radial-gradient(
+                        at 100% 100%,
+                        rgba(184, 134, 11, 0.12) 0px,
+                        transparent 50%
+                    );
+                background-attachment: fixed;
+            }
 
-  <!--
-    NOTA PARA FUTURO REFACTOR:
-    El CSS del admin está embebido en el <style> de admin.html.
-    En una siguiente iteración se puede extraer a src/styles/admin.css
-    y moverlo aquí como <link rel="stylesheet" href="/admin.css">
-    Por ahora, se incluye como bloque <style> para no romper nada.
-  -->
-  <style is:inline>
-    :root {
-      --primary: #C9748A;
-      --accent: #B8860B;
-      --yellow: #D4AF37;
-      --dark-bg: #0f0b0d;
-      --card-bg: rgba(35, 22, 28, 0.75);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --text-primary: #fdf8f5;
-      --text-secondary: #c4a8b0;
-      --white: #ffffff;
-      --success: #22c55e;
-      --warning: #eab308;
-      --danger: #ef4444;
-      --info: #3b82f6;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--dark-bg);
-      color: var(--text-primary);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-      background-image:
-        radial-gradient(at 0% 0%, rgba(201, 116, 138, 0.18) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(184, 134, 11, 0.12) 0px, transparent 50%);
-      background-attachment: fixed;
-    }
+            /* Loading overlay */
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--dark-bg);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                transition: opacity 0.5s;
+            }
 
-    /* ---- Resto del CSS del admin copiado de admin.html ---- */
-    /* Ver archivo admin.html líneas 14-853 para el CSS completo */
-    /* Este bloque se extrae a admin.css en la iteración de cleanup posterior */
+            /* Dashboard Layout */
+            .dashboard-container {
+                display: flex;
+                min-height: 100vh;
+            }
+            .sidebar {
+                width: 280px;
+                background: rgba(15, 22, 42, 0.85);
+                backdrop-filter: blur(12px);
+                border-right: 1px solid var(--border-color);
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                height: 100vh;
+                z-index: 100;
+                transition: var(--transition);
+            }
+            .sidebar-header {
+                padding: 2rem 1.5rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .sidebar-menu {
+                list-style: none;
+                padding: 2rem 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                flex: 1;
+            }
+            .sidebar-link {
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+                padding: 0.9rem 1.2rem;
+                color: var(--text-secondary);
+                border-radius: 12px;
+                font-weight: 500;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .sidebar-link:hover,
+            .sidebar-link.active {
+                color: var(--white);
+                background: rgba(255, 255, 255, 0.05);
+            }
+            .sidebar-link.active {
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 194, 255, 0.15) 0%,
+                    rgba(255, 20, 147, 0.05) 100%
+                );
+                border-left: 3px solid var(--primary);
+                color: var(--primary);
+            }
+            .sidebar-footer {
+                padding: 1.5rem;
+                border-top: 1px solid var(--border-color);
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: 2.5rem;
+                min-width: 0;
+                overflow-x: hidden;
+                transition: var(--transition);
+            }
+            .main-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2.5rem;
+            }
+            .main-title h1 {
+                font-size: 2rem;
+                font-family: "Outfit", sans-serif;
+                color: var(--white);
+                margin-bottom: 0.25rem;
+            }
+            .main-title p {
+                color: var(--text-secondary);
+                font-size: 0.95rem;
+            }
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2.5rem;
+            }
+            .metric-card {
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 20px;
+                padding: 1.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+                transition: var(--transition);
+            }
+            .metric-card:hover {
+                transform: translateY(-3px);
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+            .metric-info h3 {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+            }
+            .metric-info p {
+                font-size: 1.8rem;
+                font-family: "Outfit", sans-serif;
+                font-weight: 700;
+                color: var(--white);
+            }
+            .metric-icon {
+                width: 54px;
+                height: 54px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .metric-icon.blue {
+                background: rgba(0, 194, 255, 0.15);
+                color: var(--primary);
+            }
+            .metric-icon.pink {
+                background: rgba(255, 20, 147, 0.15);
+                color: var(--accent);
+            }
+            .metric-icon.yellow {
+                background: rgba(255, 215, 0, 0.15);
+                color: var(--yellow);
+            }
+            .metric-icon.green {
+                background: rgba(34, 197, 94, 0.15);
+                color: var(--success);
+            }
+            .dashboard-section {
+                display: none;
+                animation: fadeIn 0.4s ease-out forwards;
+            }
+            .dashboard-section.active {
+                display: block;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .content-card {
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 24px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                margin-bottom: 2rem;
+                overflow: hidden;
+            }
+            .card-header {
+                padding: 1.5rem 2rem;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .card-header h2 {
+                font-size: 1.25rem;
+                font-family: "Outfit", sans-serif;
+                font-weight: 600;
+                color: var(--white);
+            }
+            .card-actions {
+                display: flex;
+                gap: 0.75rem;
+            }
+            .btn-action {
+                background: var(--accent);
+                color: var(--white);
+                border: none;
+                border-radius: 10px;
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: var(--transition);
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                text-decoration: none;
+            }
+            .btn-action:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
+            }
+            .btn-action.secondary {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+            }
+            .btn-action.secondary:hover {
+                background: rgba(255, 255, 255, 0.1);
+                box-shadow: none;
+            }
+            .table-responsive {
+                overflow-x: auto;
+                width: 100%;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                font-size: 0.9rem;
+            }
+            th {
+                background: rgba(15, 22, 42, 0.4);
+                padding: 1.2rem 1.5rem;
+                color: var(--text-secondary);
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.05em;
+                border-bottom: 1px solid var(--border-color);
+            }
+            td {
+                padding: 1.2rem 1.5rem;
+                border-bottom: 1px solid var(--border-color);
+                color: var(--text-primary);
+            }
+            tr:last-child td {
+                border-bottom: none;
+            }
+            tr:hover td {
+                background: rgba(255, 255, 255, 0.01);
+            }
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.3rem 0.75rem;
+                border-radius: 50px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                gap: 0.3rem;
+            }
+            .status-badge.pendiente {
+                background: rgba(234, 179, 8, 0.15);
+                color: var(--warning);
+            }
+            .status-badge.en_produccion {
+                background: rgba(59, 130, 246, 0.15);
+                color: var(--info);
+            }
+            .status-badge.listo_entrega {
+                background: rgba(0, 194, 255, 0.15);
+                color: var(--primary);
+            }
+            .status-badge.completado {
+                background: rgba(34, 197, 94, 0.15);
+                color: var(--success);
+            }
+            .status-badge.cancelado {
+                background: rgba(239, 68, 68, 0.15);
+                color: var(--danger);
+            }
+            .status-select {
+                background: rgba(15, 22, 42, 0.9);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 0.4rem 0.6rem;
+                border-radius: 8px;
+                outline: none;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .status-select:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 8px rgba(0, 194, 255, 0.2);
+            }
+            .status-select option,
+            .form-control option,
+            select option {
+                background-color: #0b0f19;
+                color: var(--text-primary);
+            }
+            .form-group {
+                margin-bottom: 1rem;
+            }
+            .form-group label {
+                display: block;
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                margin-bottom: 0.4rem;
+                font-weight: 500;
+            }
+            .form-control {
+                width: 100%;
+                background: rgba(15, 22, 42, 0.6);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                padding: 0.65rem 0.9rem;
+                color: var(--text-primary);
+                font-size: 0.9rem;
+                outline: none;
+                transition: var(--transition);
+                font-family: inherit;
+            }
+            .form-control:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 10px rgba(0, 194, 255, 0.15);
+            }
+            .action-icon-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--text-secondary);
+                padding: 0.3rem;
+                border-radius: 6px;
+                transition: var(--transition);
+            }
+            .action-icon-btn:hover {
+                color: var(--white);
+                background: rgba(255, 255, 255, 0.05);
+            }
+            .action-icon-btn.delete:hover {
+                color: var(--danger);
+                background: rgba(239, 68, 68, 0.1);
+            }
+            .action-icon-btn.edit:hover {
+                color: var(--primary);
+                background: rgba(0, 194, 255, 0.1);
+            }
 
-    /* Loading overlay */
-    .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+            /* Modales */
+            .modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(11, 15, 25, 0.7);
+                backdrop-filter: blur(8px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+            .modal.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .modal-content {
+                background: rgba(22, 29, 49, 0.95);
+                backdrop-filter: blur(16px);
+                border: 1px solid var(--border-color);
+                border-radius: 28px;
+                padding: 2.5rem;
+                width: 100%;
+                max-width: 600px;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+                transform: translateY(20px);
+                transition: transform 0.3s;
+            }
+            .modal.active .modal-content {
+                transform: translateY(0);
+            }
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.5rem;
+            }
+            .modal-header h3 {
+                font-size: 1.4rem;
+                font-family: "Outfit", sans-serif;
+                color: var(--white);
+            }
+            .modal-close {
+                background: none;
+                border: none;
+                color: var(--text-secondary);
+                cursor: pointer;
+                padding: 0.2rem;
+                border-radius: 50%;
+                transition: var(--transition);
+            }
+            .modal-close:hover {
+                color: var(--white);
+                background: rgba(255, 255, 255, 0.05);
+            }
+            .modal-body {
+                max-height: 420px;
+                overflow-y: auto;
+                margin-bottom: 1.5rem;
+                padding-right: 0.5rem;
+            }
+            .modal-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1rem;
+            }
 
-    /* Dashboard Layout */
-    .dashboard-container { display: flex; min-height: 100vh; }
-    .sidebar { width: 280px; background: rgba(15, 22, 42, 0.85); backdrop-filter: blur(12px); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; transition: var(--transition); }
-    .sidebar-header { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
-    .sidebar-menu { list-style: none; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-    .sidebar-link { display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.2rem; color: var(--text-secondary); border-radius: 12px; font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: var(--transition); }
-    .sidebar-link:hover, .sidebar-link.active { color: var(--white); background: rgba(255, 255, 255, 0.05); }
-    .sidebar-link.active { background: linear-gradient(135deg, rgba(0, 194, 255, 0.15) 0%, rgba(255, 20, 147, 0.05) 100%); border-left: 3px solid var(--primary); color: var(--primary); }
-    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border-color); }
-    .main-content { margin-left: 280px; flex: 1; padding: 2.5rem; min-width: 0; overflow-x: hidden; transition: var(--transition); }
-    .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
-    .main-title h1 { font-size: 2rem; font-family: 'Outfit', sans-serif; color: var(--white); margin-bottom: 0.25rem; }
-    .main-title p { color: var(--text-secondary); font-size: 0.95rem; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
-    .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transition: var(--transition); }
-    .metric-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); }
-    .metric-info h3 { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600; }
-    .metric-info p { font-size: 1.8rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--white); }
-    .metric-icon { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-    .metric-icon.blue { background: rgba(0, 194, 255, 0.15); color: var(--primary); }
-    .metric-icon.pink { background: rgba(255, 20, 147, 0.15); color: var(--accent); }
-    .metric-icon.yellow { background: rgba(255, 215, 0, 0.15); color: var(--yellow); }
-    .metric-icon.green { background: rgba(34, 197, 94, 0.15); color: var(--success); }
-    .dashboard-section { display: none; animation: fadeIn 0.4s ease-out forwards; }
-    .dashboard-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .content-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 2rem; overflow: hidden; }
-    .card-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .card-header h2 { font-size: 1.25rem; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--white); }
-    .card-actions { display: flex; gap: 0.75rem; }
-    .btn-action { background: var(--accent); color: var(--white); border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 0.4rem; }
-    .btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3); }
-    .btn-action.secondary { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); }
-    .btn-action.secondary:hover { background: rgba(255,255,255,0.1); box-shadow: none; }
-    .table-responsive { overflow-x: auto; width: 100%; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-    th { background: rgba(15, 22, 42, 0.4); padding: 1.2rem 1.5rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
-    td { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255, 255, 255, 0.01); }
-    .status-badge { display: inline-flex; align-items: center; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; gap: 0.3rem; }
-    .status-badge.pendiente { background: rgba(234, 179, 8, 0.15); color: var(--warning); }
-    .status-badge.en_produccion { background: rgba(59, 130, 246, 0.15); color: var(--info); }
-    .status-badge.listo_entrega { background: rgba(0, 194, 255, 0.15); color: var(--primary); }
-    .status-badge.completado { background: rgba(34, 197, 94, 0.15); color: var(--success); }
-    .status-badge.cancelado { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-    .status-select { background: rgba(15, 22, 42, 0.9); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.4rem 0.6rem; border-radius: 8px; outline: none; font-size: 0.85rem; cursor: pointer; transition: var(--transition); }
-    .status-select:focus { border-color: var(--primary); box-shadow: 0 0 8px rgba(0, 194, 255, 0.2); }
-    .status-select option, .form-control option, select option { background-color: #0b0f19; color: var(--text-primary); }
-    .action-icon-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0.3rem; border-radius: 6px; transition: var(--transition); }
-    .action-icon-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
-    .action-icon-btn.delete:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
-    .action-icon-btn.edit:hover { color: var(--primary); background: rgba(0, 194, 255, 0.1); }
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-    .modal.active { opacity: 1; pointer-events: auto; }
-    .modal-content { background: rgba(22, 29, 49, 0.95); backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 28px; padding: 2.5rem; width: 100%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s; }
-    .modal.active .modal-content { transform: translateY(0); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .modal-header h3 { font-size: 1.4rem; font-family: 'Outfit', sans-serif; color: var(--white); }
-    .modal-close { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.2rem; border-radius: 50%; transition: var(--transition); }
-    .modal-close:hover { color: var(--white); background: rgba(255,255,255,0.05); }
-    .modal-body { max-height: 400px; overflow-y: auto; margin-bottom: 2rem; padding-right: 0.5rem; }
-    .modal-body::-webkit-scrollbar { width: 6px; }
-    .modal-body::-webkit-scrollbar-track { background: rgba(15, 22, 42, 0.4); border-radius: 10px; }
-    .modal-body::-webkit-scrollbar-thumb { background: rgba(0, 194, 255, 0.3); border-radius: 10px; }
-    .modal-body::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--dark-bg); }
-    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; border: 2px solid var(--dark-bg); }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; }
-    .order-meta-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: rgba(15, 22, 42, 0.4); padding: 1.2rem; border-radius: 16px; margin-bottom: 1.5rem; }
-    .order-meta-info p { font-size: 0.9rem; color: var(--text-secondary); }
-    .order-meta-info p strong { color: var(--white); display: block; font-size: 0.95rem; margin-top: 0.2rem; }
-    .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 0; border-bottom: 1px solid var(--border-color); }
-    .detail-item:last-child { border-bottom: none; }
-    .detail-item-info { display: flex; align-items: center; gap: 0.8rem; }
-    .detail-item-icon { width: 38px; height: 38px; background: rgba(255, 20, 147, 0.1); color: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-    .detail-item-name h4 { font-size: 0.95rem; color: var(--white); font-weight: 500; }
-    .detail-item-name span { font-size: 0.8rem; color: var(--text-secondary); }
-    .detail-item-qty { font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--primary); font-size: 1.05rem; }
-    .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 0.75rem; }
-    .toast { background: rgba(22, 29, 49, 0.9); backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-left: 4px solid var(--primary); border-radius: 12px; padding: 1rem 1.5rem; min-width: 280px; color: var(--text-primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 0.8rem; font-size: 0.9rem; animation: slideIn 0.3s ease-out forwards; }
-    .toast.success { border-left-color: var(--success); }
-    .toast.error { border-left-color: var(--danger); }
-    .toast.warning { border-left-color: var(--warning); }
-    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.6); backdrop-filter: blur(4px); z-index: 99; opacity: 0; pointer-events: none; transition: var(--transition); }
-    .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
-    .collapsible-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
-    .collapsible-content.expanded { max-height: 1200px; opacity: 1; }
-    .form-group { margin-bottom: 1.5rem; text-align: left; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-    .form-control { width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.03); color: var(--text-primary); outline: none; font-size: 0.95rem; transition: var(--transition); }
-    .form-control:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 12px rgba(0, 194, 255, 0.2); }
-    @media (max-width: 992px) {
-      .sidebar { position: fixed; left: -260px; width: 260px; height: 100vh; z-index: 100; transition: var(--transition); }
-      .sidebar.active { left: 0; box-shadow: 0 0 35px rgba(0,0,0,0.6); }
-      .main-content { margin-left: 0 !important; padding: 1.5rem; }
-      #btn-sidebar-toggle { display: flex !important; }
-    }
-    @media (max-width: 576px) {
-      .main-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-      .card-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.2rem 1rem !important; }
-      .order-meta-info { grid-template-columns: 1fr; }
-      .main-content { padding: 1rem !important; }
-      .content-card { border-radius: 16px; margin-bottom: 1.5rem; }
-      th, td { padding: 0.8rem 0.6rem !important; font-size: 0.8rem !important; }
-      .status-select { padding: 0.3rem 0.4rem; font-size: 0.75rem; }
-      .modal-content { padding: 1.5rem; border-radius: 20px; width: 94%; margin: 0 auto; }
-      .modal-body { max-height: 60vh; margin-bottom: 1.5rem; }
-      .modal-footer { flex-wrap: wrap; gap: 0.75rem; }
-      .modal-footer .btn-action { flex: 1 1 100%; justify-content: center; padding: 0.75rem 1rem; }
-    }
-  </style>
-</head>
-<body>
+            .order-meta-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.2rem;
+                background: rgba(15, 22, 42, 0.4);
+                padding: 1.2rem;
+                border-radius: 16px;
+                margin-bottom: 1.5rem;
+            }
+            .order-meta-info p {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+            }
+            .order-meta-info p strong,
+            .order-meta-info > div > strong {
+                color: var(--white);
+                display: block;
+                font-size: 0.95rem;
+                margin-top: 0.2rem;
+            }
 
-  <!-- Loading overlay -->
-  <div class="page-loader" id="page-loader">
-    <div style="text-align: center;">
-      <i data-lucide="loader-2" class="spin" style="width: 50px; height: 50px; color: var(--primary); margin-bottom: 1rem;"></i>
-      <p style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 0.05em;">Cargando Panel VIP...</p>
-    </div>
-  </div>
+            .detail-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.9rem 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .detail-item:last-child {
+                border-bottom: none;
+            }
+            .detail-item-info {
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+            }
+            .detail-item-icon {
+                width: 38px;
+                height: 38px;
+                background: rgba(255, 20, 147, 0.1);
+                color: var(--accent);
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .detail-item-name h4 {
+                font-size: 0.95rem;
+                color: var(--white);
+                font-weight: 500;
+            }
+            .detail-item-name span {
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+            }
+            .detail-item-qty {
+                font-family: "Outfit", sans-serif;
+                font-weight: 600;
+                color: var(--primary);
+                font-size: 1.05rem;
+            }
 
-  <!-- Dashboard — visible directamente (el middleware ya autenticó) -->
-  <div class="dashboard-container" id="dashboard-container" style="display: none;">
-    
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            /* Collapsible */
+            .collapsible-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-out;
+            }
+            .collapsible-content.expanded {
+                max-height: 2000px;
+            }
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="login-logo" style="margin-bottom: 0; justify-content: flex-start; font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif; font-weight: 700;">
-          <i data-lucide="sparkles" style="color: var(--primary);"></i>
-          <span class="logo-text">Fo<span style="color: var(--accent);">gon</span></span>
-        </div>
-      </div>
-      <ul class="sidebar-menu">
-        <li><div class="sidebar-link active" data-target="section-metrics"><i data-lucide="layout-dashboard"></i><span>Métricas Generales</span></div></li>
-        <li><div class="sidebar-link" data-target="section-orders"><i data-lucide="shopping-bag"></i><span>Gestión Pedidos</span></div></li>
-        <li><div class="sidebar-link" data-target="section-sales"><i data-lucide="trending-up"></i><span>Registro Ventas</span></div></li>
-        <li><div class="sidebar-link" data-target="section-inventory"><i data-lucide="box"></i><span>Inventario/Catálogo</span></div></li>
-      </ul>
-      <div class="sidebar-footer">
-        <div class="sidebar-link" id="btn-logout" style="color: var(--danger); background: rgba(239, 68, 68, 0.05);">
-          <i data-lucide="log-out"></i>
-          <span>Cerrar Sesión</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-          <button id="btn-sidebar-toggle" class="btn-action secondary" style="display: none; padding: 0.5rem; border-radius: 10px; width: 42px; height: 42px; justify-content: center; align-items: center; border: 1px solid var(--border-color); cursor: pointer;">
-            <i data-lucide="menu"></i>
-          </button>
-          <div class="main-title">
-            <h1 id="dashboard-title">Panel Administrativo</h1>
-            <p id="dashboard-subtitle">Control de ventas, catálogo y procesamiento de pedidos en tiempo real.</p>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 1rem; flex-shrink: 0;">
-          <div style="text-align: right;" id="user-info-badge">
-            <p style="font-size: 0.85rem; font-weight: 600;" id="admin-user-name">Administrador</p>
-            <span style="font-size: 0.75rem; color: var(--success); font-weight: 500; display: inline-flex; align-items: center; gap: 0.2rem;">
-              <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--success);"></span> En línea
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <!-- SECCIÓN 1: MÉTRICAS -->
-      <div id="section-metrics" class="dashboard-section active">
-        <div class="metrics-grid">
-          <div class="metric-card"><div class="metric-info"><h3>Ventas Registradas</h3><p id="metric-sales-count">0</p></div><div class="metric-icon green"><i data-lucide="trending-up"></i></div></div>
-          <div class="metric-card"><div class="metric-info"><h3>Pedidos Pendientes</h3><p id="metric-pending-orders">0</p></div><div class="metric-icon yellow"><i data-lucide="clock"></i></div></div>
-          <div class="metric-card"><div class="metric-info"><h3>En Producción</h3><p id="metric-prod-orders">0</p></div><div class="metric-icon blue"><i data-lucide="hammer"></i></div></div>
-          <div class="metric-card"><div class="metric-info"><h3>Productos en Catálogo</h3><p id="metric-prod-count">0</p></div><div class="metric-icon pink"><i data-lucide="grid"></i></div></div>
-        </div>
-        <div class="content-card">
-          <div class="card-header"><h2>Pedidos Recientes</h2><button class="btn-action secondary view-all-orders-btn">Ver todos</button></div>
-          <div class="table-responsive"><table><thead><tr><th>ID Pedido</th><th>Cliente</th><th>Teléfono</th><th>Artículos</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="table-recent-orders"><tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">Cargando pedidos recientes...</td></tr></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN 2: PEDIDOS -->
-      <div id="section-orders" class="dashboard-section">
-        <div class="content-card">
-          <div class="card-header"><h2>Todos los Pedidos Recibidos <span id="orders-total-summary" style="font-size: 0.95rem; color: var(--accent); margin-left: 1rem; font-weight: 500;"></span></h2><div class="card-actions"><button class="btn-action secondary" id="btn-refresh-orders"><i data-lucide="refresh-cw"></i> Actualizar</button></div></div>
-          <div class="table-responsive"><table><thead><tr><th>ID Pedido</th><th>Cliente</th><th>Teléfono</th><th>Artículos</th><th>Fecha</th><th>Cambiar Estado</th><th>Acciones</th></tr></thead><tbody id="table-all-orders"><tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">No hay pedidos registrados en el sistema.</td></tr></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN 2.5: VENTAS -->
-      <div id="section-sales" class="dashboard-section">
-        <div class="content-card">
-          <div class="card-header"><h2>Registro Histórico de Ventas <span id="sales-total-amount" style="font-size: 0.95rem; color: var(--success); margin-left: 1rem; font-weight: 500;"></span></h2><div class="card-actions"><button class="btn-action secondary" id="btn-refresh-sales"><i data-lucide="refresh-cw"></i> Sincronizar</button></div></div>
-          <div class="table-responsive"><table><thead><tr><th>ID Venta</th><th>ID Pedido</th><th>Cliente</th><th>Teléfono</th><th>Monto</th><th>Método de Pago</th><th>Fecha de Pago</th></tr></thead><tbody id="table-all-sales"><tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">Cargando registro de ventas...</td></tr></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN 3: INVENTARIO -->
-      <div id="section-inventory" class="dashboard-section">
-        <div class="content-card">
-          <div class="card-header">
-            <h2>Gestión de Inventario / Catálogo</h2>
-            <div class="card-actions">
-              <button class="btn-action" id="btn-toggle-product-form"><i data-lucide="plus"></i> Nuevo Producto</button>
-              <button class="btn-action secondary" id="btn-refresh-products"><i data-lucide="refresh-cw"></i> Actualizar</button>
+            .toast-container {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                z-index: 2000;
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .toast {
+                background: rgba(22, 29, 49, 0.9);
+                backdrop-filter: blur(8px);
+                border: 1px solid var(--border-color);
+                border-left: 4px solid var(--primary);
+                border-radius: 12px;
+                padding: 1rem 1.5rem;
+                min-width: 280px;
+                color: var(--text-primary);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+                font-size: 0.9rem;
+                animation: slideIn 0.3s ease-out forwards;
+            }
+            .toast.success {
+                border-left-color: var(--success);
+            }
+            .toast.error {
+                border-left-color: var(--danger);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Loading State Inicial -->
+        <div class="page-loader" id="page-loader">
+            <div style="text-align: center;">
+                <i
+                    data-lucide="loader-2"
+                    class="spin"
+                    style="width: 50px; height: 50px; color: var(--primary); margin-bottom: 1rem;"
+                ></i>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 0.05em;">
+                    Cargando Panel FOGÓN...
+                </p>
             </div>
-          </div>
-          <!-- Formulario Añadir/Editar Producto (colapsable) -->
-          <div id="product-form-wrapper" class="collapsible-content" style="padding: 0 2rem;">
-            <div style="padding: 2rem 0; border-bottom: 1px solid var(--border-color);">
-              <h3 id="form-product-title" style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--primary);">Añadir Nuevo Producto</h3>
-              <form id="product-form">
-                <input type="hidden" id="product-id-edit">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                  <div class="form-group"><label for="product-name">Nombre del Producto</label><input type="text" id="product-name" class="form-control" placeholder="Ej: Franela Personalizada" required></div>
-                  <div class="form-group"><label for="product-type">Categoría / Tipo</label><select id="product-type" class="form-control"><option value="apparel">Vestimenta (apparel)</option><option value="mug">Hogar y Tazas (mug)</option><option value="accessory">Accesorios (accessory)</option><option value="print">Impresión (print)</option></select></div>
-                  <div class="form-group"><label for="product-price">Precio base ($)</label><input type="number" id="product-price" class="form-control" placeholder="0.00" step="0.01" min="0"></div>
-                  <div class="form-group"><label for="product-icon">Icono (Lucide)</label><input type="text" id="product-icon" class="form-control" placeholder="Ej: shirt, coffee, crown"></div>
-                  <div class="form-group" style="grid-column: 1/-1;"><label for="product-description">Descripción</label><textarea id="product-description" class="form-control" rows="2" placeholder="Descripción breve del producto..."></textarea></div>
-                  <div class="form-group" style="grid-column: 1/-1;"><label for="product-image">URL de Imagen</label><input type="url" id="product-image" class="form-control" placeholder="https://... o /assets/nombre.png"></div>
+        </div>
+
+        <div
+            class="dashboard-container"
+            id="dashboard-container"
+            style="display: none;"
+        >
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div
+                        class="login-logo"
+                        style="margin-bottom: 0; justify-content: flex-start; font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif; font-weight: 700;"
+                    >
+                        <i
+                            data-lucide="flame"
+                            style="color: var(--primary);"
+                        ></i>
+                        <span class="logo-text">
+                            FOG<span style="color: var(--accent);">ÓN</span>
+                        </span>
+                    </div>
                 </div>
-                <!-- Atributos dinámicos -->
-                <div id="attributes-container" style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-                    <h4 style="font-family: 'Outfit', sans-serif; color: var(--text-secondary); font-size: 0.95rem;">Atributos Dinámicos (Tallas, Colores, etc.)</h4>
-                    <button type="button" class="btn-action secondary" id="btn-add-attribute" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;"><i data-lucide="plus"></i> Atributo</button>
-                  </div>
-                  <div id="attributes-list"></div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <div
+                            class="sidebar-link active"
+                            data-target="section-metrics"
+                        >
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Métricas Generales</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="sidebar-link" data-target="section-orders">
+                            <i data-lucide="shopping-bag"></i>
+                            <span>Gestión Pedidos</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="sidebar-link" data-target="section-sales">
+                            <i data-lucide="trending-up"></i>
+                            <span>Registro Ventas</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div
+                            class="sidebar-link"
+                            data-target="section-inventory"
+                        >
+                            <i data-lucide="utensils"></i>
+                            <span>Menú / Platos</span>
+                        </div>
+                    </li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button
+                        class="btn-action secondary"
+                        id="btn-open-change-password"
+                        style="width: 100%; justify-content: center; margin-bottom: 0.5rem;"
+                    >
+                        <i data-lucide="key"></i>
+                        <span>Cambiar Clave</span>
+                    </button>
+                    <div
+                        class="sidebar-link"
+                        id="btn-logout"
+                        style="color: var(--danger); background: rgba(239, 68, 68, 0.05);"
+                    >
+                        <i data-lucide="log-out"></i>
+                        <span>Cerrar Sesión</span>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                  <button type="submit" class="btn-action" id="btn-submit-product"><i data-lucide="save"></i> Guardar Producto</button>
-                  <button type="button" class="btn-action secondary" id="btn-cancel-edit">Cancelar</button>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header
+                    class="main-header"
+                    style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; flex-wrap: wrap;"
+                >
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <button
+                            id="btn-sidebar-toggle"
+                            class="btn-action secondary"
+                            style="display: none; padding: 0.5rem; border-radius: 10px; width: 42px; height: 42px; justify-content: center; align-items: center; border: 1px solid var(--border-color); cursor: pointer;"
+                        >
+                            <i data-lucide="menu"></i>
+                        </button>
+                        <div class="main-title">
+                            <h1 id="dashboard-title">Panel Administrativo</h1>
+                            <p id="dashboard-subtitle">
+                                Control de pedidos, ventas y menú de FOGÓN en
+                                tiempo real.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-shrink: 0;">
+                        <div id="admin-bcv-widget" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); padding: 0.4rem 0.8rem; border-radius: 12px;">
+                            <span style="font-size: 1.1rem;">🇻🇪</span>
+                            <div>
+                                <span style="font-size: 0.72rem; color: var(--text-secondary); display: block; line-height: 1;">Tasa BCV</span>
+                                <strong id="admin-bcv-val" style="font-size: 0.95rem; color: #D4AF37;">-- Bs.</strong>
+                            </div>
+                            <button id="btn-open-bcv-modal" class="btn-action secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 8px; margin-left: 0.2rem;" title="Ajustar Tasa BCV">
+                                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                        <div style="text-align: right;" id="user-info-badge">
+                            <p
+                                style="font-size: 0.85rem; font-weight: 600;"
+                                id="admin-user-name"
+                            >
+                                Administrador
+                            </p>
+                            <span style="font-size: 0.75rem; color: var(--success); font-weight: 500; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--success);"></span>{" "}
+                                En línea
+                            </span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- SECCIÓN 1: MÉTRICAS -->
+                <div id="section-metrics" class="dashboard-section active">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h3>Ventas Registradas</h3>
+                                <p id="metric-sales-count">0</p>
+                            </div>
+                            <div class="metric-icon green">
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h3>Pedidos Pendientes</h3>
+                                <p id="metric-pending-orders">0</p>
+                            </div>
+                            <div class="metric-icon yellow">
+                                <i data-lucide="clock"></i>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h3>En Preparación</h3>
+                                <p id="metric-prod-orders">0</p>
+                            </div>
+                            <div class="metric-icon blue">
+                                <i data-lucide="cooking-pot"></i>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h3>Platos en Menú</h3>
+                                <p id="metric-prod-count">0</p>
+                            </div>
+                            <div class="metric-icon pink">
+                                <i data-lucide="utensils"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h2>Pedidos Recientes</h2>
+                            <button class="btn-action secondary view-all-orders-btn">
+                                Ver todos
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Pedido</th>
+                                        <th>Cliente</th>
+                                        <th>Teléfono</th>
+                                        <th>Artículos</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-recent-orders">
+                                    <tr>
+                                        <td
+                                            colspan="7"
+                                            style="text-align: center; color: var(--text-secondary);"
+                                        >
+                                            Cargando pedidos recientes...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-              </form>
+
+                <!-- SECCIÓN 2: PEDIDOS -->
+                <div id="section-orders" class="dashboard-section">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h2>
+                                Todos los Pedidos Recibidos{" "}
+                                <span
+                                    id="orders-total-summary"
+                                    style="font-size: 0.95rem; color: var(--accent); margin-left: 1rem; font-weight: 500;"
+                                ></span>
+                            </h2>
+                            <div class="card-actions">
+                                <button
+                                    class="btn-action secondary"
+                                    id="btn-refresh-orders"
+                                >
+                                    <i data-lucide="refresh-cw"></i> Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Pedido</th>
+                                        <th>Cliente</th>
+                                        <th>Teléfono</th>
+                                        <th>Artículos</th>
+                                        <th>Fecha</th>
+                                        <th>Cambiar Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-all-orders">
+                                    <tr>
+                                        <td
+                                            colspan="7"
+                                            style="text-align: center; color: var(--text-secondary);"
+                                        >
+                                            No hay pedidos registrados en el
+                                            sistema.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2.5: VENTAS -->
+                <div id="section-sales" class="dashboard-section">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h2>
+                                Registro Histórico de Ventas{" "}
+                                <span
+                                    id="sales-total-amount"
+                                    style="font-size: 0.95rem; color: var(--success); margin-left: 1rem; font-weight: 500;"
+                                ></span>
+                            </h2>
+                            <div class="card-actions">
+                                <button
+                                    class="btn-action secondary"
+                                    id="btn-refresh-sales"
+                                >
+                                    <i data-lucide="refresh-cw"></i> Sincronizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Venta</th>
+                                        <th>ID Pedido</th>
+                                        <th>Cliente</th>
+                                        <th>Teléfono</th>
+                                        <th>Monto</th>
+                                        <th>Método de Pago</th>
+                                        <th>Fecha de Pago</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-all-sales">
+                                    <tr>
+                                        <td
+                                            colspan="7"
+                                            style="text-align: center; color: var(--text-secondary);"
+                                        >
+                                            Cargando registro de ventas...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 3: INVENTARIO / MENÚ -->
+                <div id="section-inventory" class="dashboard-section">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h2>Gestión del Menú / Platillos</h2>
+                            <div class="card-actions">
+                                <button
+                                    class="btn-action"
+                                    id="btn-toggle-product-form"
+                                >
+                                    <i data-lucide="plus"></i> Nuevo Plato
+                                </button>
+                                <button
+                                    class="btn-action secondary"
+                                    id="btn-refresh-products"
+                                >
+                                    <i data-lucide="refresh-cw"></i> Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Formulario Añadir/Editar Producto (colapsable) -->
+                        <div
+                            id="product-form-collapse"
+                            class="collapsible-content"
+                            style="padding: 0 2rem;"
+                        >
+                            <div style="padding: 2rem 0; border-bottom: 1px solid var(--border-color);">
+                                <h3
+                                    id="form-product-title"
+                                    style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--primary);"
+                                >
+                                    Añadir Nuevo Plato
+                                </h3>
+                                <form id="product-form">
+                                    <input
+                                        type="hidden"
+                                        id="prod-method"
+                                        value="POST"
+                                    />
+
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                        <div class="form-group">
+                                            <label for="prod-id">
+                                                Slug / ID Único
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="prod-id"
+                                                class="form-control"
+                                                placeholder="ej: pabellon-criollo"
+                                                required
+                                            />
+                                            <span style="font-size:0.75rem; color:var(--text-secondary);">
+                                                Minúsculas, números o guiones.
+                                            </span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="prod-name">
+                                                Nombre del Plato
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="prod-name"
+                                                class="form-control"
+                                                placeholder="ej: Pabellón Criollo Especial"
+                                                required
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="prod-category">
+                                                Categoría
+                                            </label>
+                                            <select
+                                                id="prod-category"
+                                                class="form-control"
+                                            >
+                                                <option value="entradas">
+                                                    🥗 Entradas
+                                                </option>
+                                                <option value="principales">
+                                                    🥩 Platos Principales
+                                                </option>
+                                                <option value="combos">
+                                                    🪙 Combos
+                                                </option>
+                                                <option value="postres">
+                                                    🍰 Postres
+                                                </option>
+                                                <option value="bebidas">
+                                                    🥤 Bebidas
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                        <div class="form-group">
+                                            <label for="prod-price">
+                                                Precio en USD ($)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                id="prod-price"
+                                                class="form-control"
+                                                step="0.01"
+                                                min="0"
+                                                placeholder="0.00"
+                                                required
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="prod-icon">
+                                                Icono (Lucide)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="prod-icon"
+                                                class="form-control"
+                                                placeholder="ej: utensils, salad, cake, cup-soda"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="prod-image">
+                                                Ruta de Imagen
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="prod-image"
+                                                class="form-control"
+                                                placeholder="assets/product_pabellon.webp"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                        <div class="form-group">
+                                            <label for="prod-sizes">
+                                                Opciones Rápidas (Separadas por
+                                                comas)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="prod-sizes"
+                                                class="form-control"
+                                                placeholder="ej: Res, Pollo, Mixto (o dejar vacío)"
+                                            />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="prod-active">
+                                                Disponibilidad en Menú
+                                            </label>
+                                            <select
+                                                id="prod-active"
+                                                class="form-control"
+                                            >
+                                                <option value="1">
+                                                    Disponible (Activo)
+                                                </option>
+                                                <option value="0">
+                                                    Agotado / Pausado (Oculto)
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="form-group"
+                                        style="margin-bottom: 1.5rem;"
+                                    >
+                                        <label for="prod-description">
+                                            Descripción
+                                        </label>
+                                        <textarea
+                                            id="prod-description"
+                                            class="form-control"
+                                            rows="2"
+                                            placeholder="Describe los ingredientes y presentación del plato..."
+                                        ></textarea>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                                        <button
+                                            type="button"
+                                            class="btn-action secondary"
+                                            id="btn-cancel-edit"
+                                            style="display: none;"
+                                        >
+                                            Cancelar Edición
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            class="btn-action"
+                                            id="btn-submit-product"
+                                        >
+                                            <i data-lucide="plus-circle"></i>{" "}
+                                            Guardar Plato
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Slug</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Opciones</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-products">
+                                    <tr>
+                                        <td
+                                            colspan="8"
+                                            style="text-align: center; color: var(--text-secondary);"
+                                        >
+                                            Cargando platillos...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal Detalles Pedido -->
+        <div class="modal" id="order-detail-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-order-title">
+                        Detalles del Pedido #FOG-XXXX
+                    </h3>
+                    <button class="modal-close" id="btn-close-modal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body" id="modal-order-body">
+                    <!-- Información del Cliente -->
+                    <div class="order-meta-info">
+                        <div>
+                            <p>Cliente</p>
+                            <strong id="modal-client-name">-</strong>
+                        </div>
+                        <div>
+                            <p>Contacto WhatsApp</p>
+                            <strong id="modal-client-phone">-</strong>
+                        </div>
+                        <div>
+                            <p>Fecha de Solicitud</p>
+                            <strong id="modal-order-date">-</strong>
+                        </div>
+                        <div>
+                            <p>Estado del Pedido</p>
+                            <strong style="margin-top: 0.2rem;">
+                                <span
+                                    id="modal-order-status"
+                                    class="status-badge pendiente"
+                                >
+                                    Pendiente
+                                </span>
+                            </strong>
+                        </div>
+                        <div>
+                            <p>Total del Pedido</p>
+                            <strong
+                                id="modal-order-total"
+                                style="color: var(--accent); font-size: 1.15rem; margin-top: 0.2rem;"
+                            >
+                                -
+                            </strong>
+                            <span id="modal-order-total-bs" style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-top: 2px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Información de Entrega -->
+                    <h4 style="font-family: 'Outfit', sans-serif; font-size: 1rem; color: var(--white); margin-top: 0.5rem; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                        Información de Entrega
+                    </h4>
+                    <div
+                        class="order-meta-info"
+                        style="grid-template-columns: 1fr; gap: 0.6rem; margin-bottom: 1.2rem;"
+                    >
+                        <div>
+                            <p>Método</p>
+                            <strong id="modal-delivery-type">-</strong>
+                        </div>
+                        <div
+                            id="modal-delivery-address-container"
+                            style="display: none;"
+                        >
+                            <p>Dirección</p>
+                            <strong id="modal-delivery-address">-</strong>
+                        </div>
+                        <div
+                            id="modal-delivery-notes-container"
+                            style="display: none;"
+                        >
+                            <p>Notas Adicionales</p>
+                            <strong id="modal-delivery-notes">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Información de Pago -->
+                    <h4 style="font-family: 'Outfit', sans-serif; font-size: 1rem; color: var(--white); margin-top: 0.5rem; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                        Datos de Pago
+                    </h4>
+                    <div
+                        class="order-meta-info"
+                        style="grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.2rem;"
+                        id="modal-payment-info-container"
+                    >
+                        <div>
+                            <p>Método de Pago</p>
+                            <strong id="modal-payment-method">-</strong>
+                        </div>
+                        <div>
+                            <p>Referencia</p>
+                            <strong id="modal-payment-reference">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Comprobante de Pago Adjunto -->
+                    <div id="modal-receipt-container" style="display: none; background: rgba(15, 22, 42, 0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">
+                            📸 Comprobante de Pago Adjunto:
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <img id="modal-receipt-thumb" src="" alt="Comprobante" style="width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" />
+                            <div>
+                                <button type="button" class="btn-action secondary" id="btn-view-receipt-modal" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                                    <i data-lucide="eye"></i> Ver Comprobante Completo
+                                </button>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 4px;">Click para ampliar captura</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Productos en Pedido -->
+                    <h4 style="font-family: 'Outfit', sans-serif; font-size: 1rem; color: var(--white); margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                        Artículos Solicitados
+                    </h4>
+                    <div id="modal-items-list">
+                        <!-- Detalle cargado dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        class="btn-action secondary"
+                        id="btn-modal-close-footer"
+                    >
+                        Cerrar
+                    </button>
+                    <a
+                        href=""
+                        target="_blank"
+                        class="btn-action"
+                        id="btn-modal-chat"
+                        style="background: #25D366; box-shadow: 0 4px 12px rgba(37,211,102,0.3);"
+                    >
+                        <i data-lucide="message-circle"></i> Chatear por
+                        WhatsApp
+                    </a>
+                </div>
             </div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
-              <tbody id="table-products"><tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">Cargando productos...</td></tr></tbody>
-            </table>
-          </div>
         </div>
-      </div>
 
-    </main>
-  </div>
-
-  <!-- Modal Detalles Pedido -->
-  <div class="modal" id="order-detail-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modal-order-title">Detalle del Pedido</h3>
-        <button class="modal-close" id="btn-close-modal"><i data-lucide="x"></i></button>
-      </div>
-      <div class="modal-body" id="modal-order-body"><p style="color: var(--text-secondary);">Cargando detalles...</p></div>
-      <div class="modal-footer"><button class="btn-action secondary" id="btn-modal-close-footer">Cerrar</button></div>
-    </div>
-  </div>
-
-  <!-- Modal Registrar Pago -->
-  <div class="modal" id="payment-modal">
-    <div class="modal-content" style="max-width: 480px;">
-      <div class="modal-header">
-        <h3>Registrar Pago</h3>
-        <button class="modal-close" id="btn-close-payment-modal"><i data-lucide="x"></i></button>
-      </div>
-      <form id="payment-form">
-        <div class="modal-body" style="max-height: 300px;">
-          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Pedido: <strong id="payment-modal-order-id" style="color: var(--primary);"></strong></p>
-          <div class="form-group"><label for="payment-amount">Monto Cobrado ($)</label><input type="number" id="payment-amount" class="form-control" placeholder="0.00" step="0.01" min="0" required></div>
-          <div class="form-group"><label for="payment-method-select">Método de Pago</label>
-            <select id="payment-method-select" class="form-control">
-              <option value="pago_movil">Pago Móvil</option>
-              <option value="transferencia">Transferencia Bancaria</option>
-              <option value="efectivo_bs">Efectivo (Bs.)</option>
-              <option value="efectivo_usd">Efectivo (USD)</option>
-              <option value="zelle">Zelle</option>
-            </select>
-          </div>
-          <div class="form-group" id="reference-group"><label for="payment-reference">Referencia / Confirmación</label><input type="text" id="payment-reference" class="form-control" placeholder="Número de referencia o confirmación"></div>
+        <!-- Modal Registrar Pago -->
+        <div class="modal" id="payment-modal">
+            <div class="modal-content" style="max-width: 480px;">
+                <div class="modal-header">
+                    <h3>Registrar Pago</h3>
+                    <button class="modal-close" id="btn-close-payment-modal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form id="payment-form">
+                    <div class="modal-body" style="max-height: 300px;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                            Pedido:{" "}
+                            <strong
+                                id="payment-modal-order-id"
+                                style="color: var(--primary);"
+                            ></strong>
+                        </p>
+                        <div class="form-group">
+                            <label for="payment-amount">
+                                Monto Cobrado ($)
+                            </label>
+                            <input
+                                type="number"
+                                id="payment-amount"
+                                class="form-control"
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-method-select">
+                                Método de Pago
+                            </label>
+                            <select
+                                id="payment-method-select"
+                                class="form-control"
+                            >
+                                <option value="pago_movil">
+                                    📱 Pago Móvil
+                                </option>
+                                <option value="zelle">🇺🇸 Zelle</option>
+                                <option value="efectivo_usd">
+                                    💵 Efectivo USD
+                                </option>
+                                <option value="efectivo_bs">
+                                    💵 Efectivo Bs
+                                </option>
+                                <option value="punto">💳 Punto de Venta</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="reference-group">
+                            <label for="payment-reference">
+                                Referencia / Confirmación
+                            </label>
+                            <input
+                                type="text"
+                                id="payment-reference"
+                                class="form-control"
+                                placeholder="Número de confirmación"
+                            />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn-action secondary"
+                            id="btn-cancel-payment-modal"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn-action"
+                            id="btn-confirm-payment"
+                            style="background: var(--success); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"
+                        >
+                            <i data-lucide="check-circle"></i> Confirmar Pago
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-action secondary" id="btn-cancel-payment-modal">Cancelar</button>
-          <button type="submit" class="btn-action" id="btn-confirm-payment" style="background: var(--success); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"><i data-lucide="check-circle"></i> Confirmar Pago</button>
+
+        <!-- Modal Cambiar Contraseña -->
+        <div class="modal" id="change-password-modal">
+            <div class="modal-content" style="max-width: 440px;">
+                <div class="modal-header">
+                    <h3>Cambiar Contraseña</h3>
+                    <button class="modal-close" id="btn-close-password-modal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form id="change-password-form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="current-password-input">
+                                Contraseña Actual
+                            </label>
+                            <input
+                                type="password"
+                                id="current-password-input"
+                                class="form-control"
+                                required
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password-input">
+                                Nueva Contraseña (mínimo 8 caracteres)
+                            </label>
+                            <input
+                                type="password"
+                                id="new-password-input"
+                                class="form-control"
+                                minlength="8"
+                                required
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password-input">
+                                Confirmar Nueva Contraseña
+                            </label>
+                            <input
+                                type="password"
+                                id="confirm-password-input"
+                                class="form-control"
+                                minlength="8"
+                                required
+                                placeholder="••••••••"
+                            />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn-action secondary"
+                            id="btn-cancel-password-modal"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn-action"
+                            id="btn-submit-password"
+                        >
+                            <i data-lucide="save"></i> Actualizar Clave
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Toast Container -->
-  <div class="toast-container" id="toast-container"></div>
+        <!-- Toast Container -->
+        <div class="toast-container" id="toast-container"></div>
 
-  <!--
-    admin.js se referencia directamente del directorio raíz.
-    En la Fase de cleanup, se moverá a public/admin.js o se modularizará.
-    Por ahora funciona idéntico al admin.html original.
-  -->
-  <script src="/admin.js" is:inline></script>
-  <script is:inline>
-    // Inicialización
-    lucide.createIcons();
+        <script src="/admin.js" is:inline></script>
+        <script is:inline>
+            lucide.createIcons();
 
-    const style = document.createElement('style');
-    style.innerHTML = `
+            const style = document.createElement("style");
+            style.innerHTML = `
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       .spin { display: inline-block; animation: spin 1s linear infinite; }
     `;
-    document.head.appendChild(style);
+            document.head.appendChild(style);
 
-    // Revertimos a la validación estática original con checkSession
-    window.addEventListener('DOMContentLoaded', () => {
-      if (typeof checkSession === 'function') {
-        checkSession();
-      }
-    });
-  </script>
-</body>
+            window.addEventListener("DOMContentLoaded", () => {
+                if (typeof checkSession === "function") {
+                    checkSession();
+                }
+            });
+        </script>
+    </body>
 </html>
